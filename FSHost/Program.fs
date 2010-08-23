@@ -66,11 +66,11 @@ let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) =
 do 
     let sapeApi = new SapeApi()
     let app = new Windows.Application()
-    let win = new DataTestWindow()
+    let win = new MainWindow()
     let loginInfoWpfData = win.GetLoginInfo()
     let projectsWpfData = win.GetProjects()
     win.ButtonLoginClick 
-    |> Event.add (fun _ -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
+    |> Event.add (fun x -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
     win.ProjectUrlSelected
     |> Event.add (fun prjUrlId -> ProcessProjectSelection sapeApi prjUrlId)
 

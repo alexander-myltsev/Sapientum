@@ -90,7 +90,7 @@ MP3
 
         private void SaveButtonClick(object sender, RoutedEventArgs e)
         {
-            Close();
+            Hide();
         }
 
         private void ForAllCheckBoxChanged(object sender, RoutedEventArgs e)

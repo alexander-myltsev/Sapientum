@@ -49,13 +49,19 @@
   <ItemGroup>
     <Compile Include="BindableExtender.cs" />
     <Compile Include="DataProviderCS.cs" />
-    <Compile Include="DataTestWindow.xaml.cs">
-      <DependentUpon>DataTestWindow.xaml</DependentUpon>
+    <Compile Include="DomainZonesDialogWindow.xaml.cs">
+      <DependentUpon>DomainZonesDialogWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImageLoader.cs" />
     <Compile Include="Converters.cs" />
     <Compile Include="MyCollection.cs" />
     <Compile Include="MySource.cs" />
+    <Compile Include="RegionsDialogWindow.xaml.cs">
+      <DependentUpon>RegionsDialogWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="SiteCategoriesDialogWindow.xaml.cs">
       <DependentUpon>SiteCategoriesDialogWindow.xaml</DependentUpon>
     </Compile>
@@ -68,7 +74,15 @@
     <Compile Include="YacaCategoriesDialogWindow.xaml.cs">
       <DependentUpon>YacaCategoriesDialogWindow.xaml</DependentUpon>
     </Compile>
-    <Page Include="DataTestWindow.xaml">
+    <Page Include="DomainZonesDialogWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MainWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="RegionsDialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

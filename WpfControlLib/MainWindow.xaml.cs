@@ -13,9 +13,9 @@ using Sapientum.Types.Wpf;
 namespace WpfControlLib
 {
     /// <summary>
-    /// Interaction logic for DataTestWindow.xaml
+    /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class DataTestWindow
+    public partial class MainWindow
     {
         public static string CalculateMd5Hash(string input)
         {
@@ -31,12 +31,16 @@ namespace WpfControlLib
             return sb.ToString();
         }
 
+        private readonly SiteCategoriesDialogWindow _siteCategoriesDialogWindow = new SiteCategoriesDialogWindow();
+        private readonly YacaCategoriesDialogWindow _yacaCategoriesDialogWindow = new YacaCategoriesDialogWindow();
+        private readonly RegionsDialogWindow _regionsDialogWindow = new RegionsDialogWindow();
+        private readonly DomainZonesDialogWindow _domainZonesDialogWindow = new DomainZonesDialogWindow();
 
-        public DataTestWindow()
+        public MainWindow()
         {
             InitializeComponent();
 
-            buttonLogin.Click += (sender, args) => ButtonLoginClick(sender, args);
+            buttonLogin.Click += (sender, args) => ButtonLoginClick(sender, new LoginInfo { CurrentLogin = textBoxLogin.Text, PasswordHash = CalculateMd5Hash(passwordBox.Password) });
 
             //var sapeApi = new XmlRpc.SapeApi();
             //sapeApi.Login("sanyok_m", CalculateMd5Hash("abc123"), true);
@@ -58,9 +62,11 @@ namespace WpfControlLib
             //projectsTreeView.DataContext = projects;
         }
 
-        public event RoutedEventHandler ButtonLoginClick;
-
         public delegate void ProjectUrlSelectedHandler(object sender, int projectUrlId);
+
+        public delegate void LoginAttemptHandler(object sender, LoginInfo loginInfo);
+
+        public event LoginAttemptHandler ButtonLoginClick;
 
         public event ProjectUrlSelectedHandler ProjectUrlSelected;
 
@@ -86,7 +92,7 @@ namespace WpfControlLib
             return passwordBox.Password;
         }
 
-        private void buttonLogin_Click(object sender, RoutedEventArgs e)
+        private void ButtonLoginClick__(object sender, RoutedEventArgs e)
         {
             foreach (var project in ((Projects)mainGrid.Resources["projects"]).Projects)
             {
@@ -108,29 +114,33 @@ namespace WpfControlLib
 
         private void SiteCategoriesChooseRadioButtonClick(object sender, RoutedEventArgs e)
         {
-            var siteCategoriesDialogWindow = new SiteCategoriesDialogWindow { Owner = this };
-            var showDialog = siteCategoriesDialogWindow.ShowDialog();
+            var showDialog = _siteCategoriesDialogWindow.ShowDialog();
         }
 
         private void YacaCategoriesChooseRadioButtonClick(object sender, RoutedEventArgs e)
         {
-            var yacaCategoriesDialogWindow = new YacaCategoriesDialogWindow { Owner = this };
-            var showDialog = yacaCategoriesDialogWindow.ShowDialog();
+            var showDialog = _yacaCategoriesDialogWindow.ShowDialog();
         }
 
         private void DomainZonesChooseRadioButtonClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var showDialog = _domainZonesDialogWindow.ShowDialog();
         }
 
         private void RegionsChooseRadioButtonClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            var showDialog = _regionsDialogWindow.ShowDialog();
         }
 
         private void PopularDomainZonesChooseRadioButtonClick(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            _domainZonesDialogWindow.ChoosePopulart();
+        }
+
+        private void WindowLoaded(object sender, RoutedEventArgs e)
+        {
+            _siteCategoriesDialogWindow.Owner = _domainZonesDialogWindow.Owner =
+                _yacaCategoriesDialogWindow.Owner = _regionsDialogWindow.Owner = this;
         }
     }
 }
