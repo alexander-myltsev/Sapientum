@@ -28,11 +28,19 @@ let ProcessLogin (sapeApi:SapeApi) (loginInfoWpfData:LoginInfo) (passwordHash:St
             loginInfoWpfData.LoggedLogin <- userInfo.Login
             loginInfoWpfData.Status <- LoginStatus.LoggedIn
             Debug.WriteLine(sprintf "login processed for %s. result: %d. balance: %f" userInfo.Login res userInfo.Balance)
+
+            async {
+                let categories = sapeApi.GetCategories()
+                let domainZones = sapeApi.GetDomainZones()
+                let regions = sapeApi.GetRegions()
+                let yacaCategories = sapeApi.GetYacaCategories()
+                ()
+            } |> Async.Start
             
             let getProjectLinks (project:Project) = async {
                 let projectUrls = 
                     sapeApi.GetProjectUrls project.Id 
-                    |> List.map (fun url -> new Types.Wpf.ProjectUrl(url.Name))
+                    |> List.map (fun url -> new Types.Wpf.ProjectUrl(url.Id, url.Name))
                 let wpfProject = new Types.Wpf.Project(project.Id, project.Name, projectUrls)
                 Debug.WriteLine(sprintf "projectUrls.Length: %d" projectUrls.Length)
                 return wpfProject
@@ -47,6 +55,13 @@ let ProcessLogin (sapeApi:SapeApi) (loginInfoWpfData:LoginInfo) (passwordHash:St
         
     } |> Async.Start
 
+let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) = 
+    async {
+        let urlLinks = sapeApi.GetUrlLinks prjUrlId UrlLinkStatus.WaitSEO
+        Debug.WriteLine(sprintf "urlLinks.Length: %d" urlLinks.Length)
+        ()
+    } |> Async.Start
+
 [<STAThread>]
 do 
     let sapeApi = new SapeApi()
@@ -55,7 +70,9 @@ do
     let loginInfoWpfData = win.GetLoginInfo()
     let projectsWpfData = win.GetProjects()
     win.ButtonLoginClick 
-    |> Event.add (fun x -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
+    |> Event.add (fun _ -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
+    win.ProjectUrlSelected
+    |> Event.add (fun prjUrlId -> ProcessProjectSelection sapeApi prjUrlId)
 
 //        System.Threading.ThreadPool.QueueUserWorkItem(
 //            fun state -> 

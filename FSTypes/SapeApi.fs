@@ -47,6 +47,15 @@ type ISapeApi =
     [<XmlRpcMethod("sape.get_categories")>]
     abstract GetCategories : unit -> XmlRpcStruct array
 
+    [<XmlRpcMethod("sape.get_domain_zones")>]
+    abstract GetDomainZones : unit -> XmlRpcStruct array
+
+    [<XmlRpcMethod("sape.get_regions")>]
+    abstract GetRegions : unit -> XmlRpcStruct array
+
+    [<XmlRpcMethod("sape.get_yaca_categories")>]
+    abstract GetYacaCategories : unit -> XmlRpcStruct array
+
     [<XmlRpcMethod("sape.get_balance")>]
     abstract GetBalance : unit -> float
 
@@ -70,6 +79,21 @@ type ISapeApi =
     [<XmlRpcMethod("sape.get_project_links")>]
     abstract GetProjectLinks : Id -> XmlRpcStruct array
 
+type UrlLinkStatus = 
+    | WaitWM
+    | WaitSEO
+    | Ok
+    | Error
+    | Sleep
+
+    member x.StringValue = 
+        match x with
+        | WaitWM -> "WAIT_WM"
+        | WaitSEO -> "WAIT_SEO"
+        | Ok -> "OK"
+        | Error -> "ERROR"
+        | Sleep -> "SLEEP"
+
 type SapeApi() = 
     let sapeProxy = XmlRpcProxyGen.Create<ISapeApi>()
   
@@ -79,11 +103,19 @@ type SapeApi() =
             Some result
         with
         | :? XmlRpcFaultException as ex when ex.FaultCode = 666 -> None
+
+
+
     member x.GetUserInfo() = sapeProxy.GetUserInfo() |> UserInfo.create
+
     member x.GetProjects() = sapeProxy.GetProjects false |> Array.map Project.create |> List.ofArray
+
     member x.GetProjectUrls id = sapeProxy.GetProjectUrls id false |> Array.map ProjectUrl.create |> List.ofArray
+
     member x.GetFilters() = sapeProxy.GetFilters true |> Array.map Filter.create |> List.ofArray
+
     //member x.SearchSites urlId filter pageNumber positionsCount = sapeProxy.SearchSites urlId filter pageNumber positionsCount
+
     member x.SearchSites urlId filter =
         let sitesCount = 100
         let rec searchSites pageNumber (resultSites:XmlRpcStruct list) =
@@ -103,8 +135,21 @@ type SapeApi() =
             else (List.append resultSites sites) |> List.map Site.create
             | None -> resultSites |> List.map Site.create 
         searchSites 0 []
+
     member x.GetProjectLinks projectId = sapeProxy.GetProjectLinks projectId
-    member x.GetUrlsLinks urlsIds status = sapeProxy.GetUrlsLinks urlsIds status |> Array.map Link.create |> List.ofArray
-    member x.GetUrlLinks  urlId   status = sapeProxy.GetUrlLinks  urlId   status |> Array.map Link.create |> List.ofArray
+
+    member x.GetUrlsLinks urlsIds (status:UrlLinkStatus) = sapeProxy.GetUrlsLinks urlsIds status.StringValue |> Array.map Link.create |> List.ofArray
+
+    member x.GetUrlLinks  urlId   (status:UrlLinkStatus) = sapeProxy.GetUrlLinks  urlId   status.StringValue |> Array.map Link.create |> List.ofArray
+
     member x.SearchPages urlId siteId filter = sapeProxy.SearchPages urlId siteId filter |> Array.map Page.create |> List.ofArray
+
     member x.PlacementCreate pageId urlId anchor = sapeProxy.PlacementCreate pageId urlId anchor
+
+    member x.GetCategories() = sapeProxy.GetCategories()
+
+    member x.GetDomainZones() = sapeProxy.GetDomainZones()
+
+    member x.GetRegions() = sapeProxy.GetRegions()
+
+    member x.GetYacaCategories() = sapeProxy.GetYacaCategories()

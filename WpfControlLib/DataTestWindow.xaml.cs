@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.FSharp.Collections;
 using Sapientum;
 using Sapientum.Types.Wpf;
@@ -58,6 +60,10 @@ namespace WpfControlLib
 
         public event RoutedEventHandler ButtonLoginClick;
 
+        public delegate void ProjectUrlSelectedHandler(object sender, int projectUrlId);
+
+        public event ProjectUrlSelectedHandler ProjectUrlSelected;
+
         //private void HyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
         //{
         //    Process.Start(e.Uri.ToString());
@@ -91,6 +97,40 @@ namespace WpfControlLib
                     projectUrl.UrlName += "!";
                 }
             }
+        }
+
+        private void RadioButtonChecked(object sender, RoutedEventArgs e)
+        {
+            var radioButton = (RadioButton)sender;
+            Debug.WriteLine(string.Format("radioButton selected. radioButton.Tag: {0}", radioButton.Tag));
+            ProjectUrlSelected(sender, (int)radioButton.Tag);
+        }
+
+        private void SiteCategoriesChooseRadioButtonClick(object sender, RoutedEventArgs e)
+        {
+            var siteCategoriesDialogWindow = new SiteCategoriesDialogWindow { Owner = this };
+            var showDialog = siteCategoriesDialogWindow.ShowDialog();
+        }
+
+        private void YacaCategoriesChooseRadioButtonClick(object sender, RoutedEventArgs e)
+        {
+            var yacaCategoriesDialogWindow = new YacaCategoriesDialogWindow { Owner = this };
+            var showDialog = yacaCategoriesDialogWindow.ShowDialog();
+        }
+
+        private void DomainZonesChooseRadioButtonClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void RegionsChooseRadioButtonClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void PopularDomainZonesChooseRadioButtonClick(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
     }
 }

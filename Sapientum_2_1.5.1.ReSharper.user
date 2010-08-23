@@ -19,44 +19,47 @@
       <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:SapeTypes.fs" caret="27" fromTop="0" />
       <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:Converters.cs" caret="4231" fromTop="12" />
       <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:ImageLoader.cs" caret="0" fromTop="0" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:SynchronisedObservableCollection.cs" caret="1656" fromTop="37" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3358" fromTop="14" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml.cs" caret="807" fromTop="5" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:SapeApi.fs" caret="3475" fromTop="18" />
       <File id="01540509-C70C-4972-A084-74B11E846A63/f:Program.fs" caret="638" fromTop="16" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="1379" fromTop="22" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:SiteCategoriesDialogWindow.xaml.cs" caret="1258" fromTop="25" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="3213" fromTop="22" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:SiteCategoriesDialogWindow.xaml" caret="293" fromTop="2" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml" caret="289" fromTop="2" />
+      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:SapeApi.fs" caret="3482" fromTop="0" />
+      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3195" fromTop="14" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml.cs" caret="4825" fromTop="49" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="16136" fromTop="15" />
     </RecentFiles>
     <RecentEdits>
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:Converters.cs" caret="4502" fromTop="49" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:Converters.cs" caret="4262" fromTop="17" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="7312" fromTop="45" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:Converters.cs" caret="4045" fromTop="13" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:Converters.cs" caret="47" fromTop="0" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="366" fromTop="5" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3866" fromTop="22" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="1195" fromTop="10" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3512" fromTop="22" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="121" fromTop="4" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:ImageLoader.cs" caret="0" fromTop="0" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:SynchronisedObservableCollection.cs" caret="3972" fromTop="49" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:SynchronisedObservableCollection.cs" caret="3163" fromTop="59" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3197" fromTop="10" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3723" fromTop="22" />
-      <File id="01540509-C70C-4972-A084-74B11E846A63/f:Program.fs" caret="1486" fromTop="23" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="6394" fromTop="21" />
-      <File id="01540509-C70C-4972-A084-74B11E846A63/f:Program.fs" caret="222" fromTop="9" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="2706" fromTop="9" />
-      <File id="01540509-C70C-4972-A084-74B11E846A63/f:Program.fs" caret="1504" fromTop="32" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3174" fromTop="27" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="3174" fromTop="25" />
-      <File id="41DEF593-026C-4D4A-935A-8800BEBC1520/f:WpfTypes.fs" caret="2874" fromTop="18" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml.cs" caret="1922" fromTop="39" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="4014" fromTop="27" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="4519" fromTop="33" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="2652" fromTop="20" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="2736" fromTop="23" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="3561" fromTop="34" />
-      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="7443" fromTop="31" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="848" fromTop="36" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="977" fromTop="46" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1104" fromTop="41" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1217" fromTop="33" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1276" fromTop="34" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1324" fromTop="39" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1407" fromTop="35" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1493" fromTop="36" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1738" fromTop="38" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="1833" fromTop="41" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:SiteCategoriesDialogWindow.xaml.cs" caret="1464" fromTop="31" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="2557" fromTop="36" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="2447" fromTop="8" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="2557" fromTop="10" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="3372" fromTop="16" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="2973" fromTop="17" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="2379" fromTop="7" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="3755" fromTop="31" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="2825" fromTop="16" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml.cs" caret="3042" fromTop="20" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:YacaCategoriesDialogWindow.xaml" caret="289" fromTop="2" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="13201" fromTop="16" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="12762" fromTop="11" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="12316" fromTop="6" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml.cs" caret="4494" fromTop="42" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="13429" fromTop="18" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="14738" fromTop="11" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="14293" fromTop="13" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="8876" fromTop="14" />
+      <File id="648A8699-4F92-4838-A4DE-F50C90E1EAD3/f:DataTestWindow.xaml" caret="16136" fromTop="15" />
     </RecentEdits>
   </RecentFiles>
   <NAntValidationSettings>
@@ -87,7 +90,7 @@
       <Item value="obj" priority="1" />
       <Item value="null" priority="0" />
       <Item value="return" priority="4" />
-      <Item value="new" priority="1" />
+      <Item value="new" priority="2" />
       <Item value="LoginInfo" priority="0" />
       <Item value="else" priority="0" />
       <Item value="mainGrid" priority="0" />
@@ -126,6 +129,10 @@
       <Item value="Project`0" priority="0" />
       <Item value="Collections" priority="0" />
       <Item value="Generic" priority="0" />
+      <Item value="StringSplitOptions`0" priority="0" />
+      <Item value="VisualChildrenCount" priority="0" />
+      <Item value="None" priority="0" />
+      <Item value="stackPanelLeft" priority="0" />
     </ItemStatistics>
     <ItemStatistics item="Qualified:WpfApp.App">
       <Item value="Windows" priority="0" />
@@ -176,6 +183,12 @@
     </ItemStatistics>
     <ItemStatistics item="Qualified:Sapientum.Types.Wpf.ProjectUrl">
       <Item value="UrlName" priority="0" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:@System.StringSplitOptions">
+      <Item value="RemoveEmptyEntries" priority="1" />
+    </ItemStatistics>
+    <ItemStatistics item="Qualified:System.String">
+      <Item value="Trim`0" priority="0" />
     </ItemStatistics>
   </CompletionStatisticsManager>
 </Configuration>

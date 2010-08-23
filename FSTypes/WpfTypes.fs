@@ -90,10 +90,12 @@ type LoginInfo() =
         with get() = !_balance
         and set v = x.Set _balance v ["Balance"]
 
-type ProjectUrl (name:string) =
+type ProjectUrl (id:Id, name:Name) =
     inherit WpfData()
 
     let _name = ref name
+    
+    member x.UrlId = id
 
     member x.UrlName 
         with get() = !_name

@@ -56,13 +56,23 @@
     <Compile Include="Converters.cs" />
     <Compile Include="MyCollection.cs" />
     <Compile Include="MySource.cs" />
+    <Compile Include="SiteCategoriesDialogWindow.xaml.cs">
+      <DependentUpon>SiteCategoriesDialogWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Window.xaml.cs">
       <DependentUpon>Window.xaml</DependentUpon>
     </Compile>
+    <Compile Include="YacaCategoriesDialogWindow.xaml.cs">
+      <DependentUpon>YacaCategoriesDialogWindow.xaml</DependentUpon>
+    </Compile>
     <Page Include="DataTestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SiteCategoriesDialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -71,6 +81,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Window.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="YacaCategoriesDialogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

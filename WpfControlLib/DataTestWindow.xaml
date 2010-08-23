@@ -1,6 +1,7 @@
 ﻿<Window x:Class="WpfControlLib.DataTestWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:WpfControlLib="clr-namespace:WpfControlLib" xmlns:Types="clr-namespace:Sapientum.Types.Wpf;assembly=FSTypes" xmlns:Converters="clr-namespace:WpfControlLib.Converters" Title="DataTestWindow" Height="600" Width="600">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:WpfControlLib="clr-namespace:WpfControlLib" xmlns:Types="clr-namespace:Sapientum.Types.Wpf;assembly=FSTypes" xmlns:Converters="clr-namespace:WpfControlLib.Converters" 
+        Title="Сапиентум" Height="600" Width="800" WindowStartupLocation="CenterScreen">
     <Grid Name="mainGrid">
         <Grid.DataContext>
             <ObjectDataProvider x:Name="dataProvider" ObjectType="{x:Type Types:DataProvider}"/>
@@ -38,21 +39,18 @@
                         <DataTemplate x:Key="ProjectUrlTemplate">
                             <Border BorderBrush="Black" BorderThickness="1" CornerRadius="10">
                                 <StackPanel Orientation="Horizontal">
-                                    <RadioButton GroupName="ProjectUrlRadioButton" Margin="5,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                                    <RadioButton GroupName="ProjectUrlRadioButton" Margin="5,5,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                                                 Tag="{Binding Path=UrlId}" Checked="RadioButtonChecked"/>
                                     <Expander HeaderTemplate="{DynamicResource PatientHeaderTemplate}" 
                                       Header="{Binding Path=This, UpdateSourceTrigger=PropertyChanged}" IsTabStop="False" HorizontalAlignment="Left" 
                                       IsEnabled="True" ExpandDirection="Down">
                                         <Grid Margin="5,5,5,5">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition />
-                                                <ColumnDefinition />
-                                                <ColumnDefinition />
-                                                <ColumnDefinition />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBlock Text="{Binding Path=UrlName}" Grid.Column="0" />
-                                            <TextBlock Text="{Binding Path=UrlName}" Grid.Column="1" />
-                                            <TextBlock Text="{Binding Path=UrlName}" Grid.Column="2" />
-                                            <TextBlock Text="{Binding Path=UrlName}" Grid.Column="3" />
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition />
+                                                <RowDefinition />
+                                            </Grid.RowDefinitions>
+                                            <TextBlock Text="{Binding Path=UrlName}" Grid.Row="0" />
+                                            <TextBlock Text="{Binding Path=UrlId}" Grid.Row="1" />
                                         </Grid>
                                     </Expander>
                                 </StackPanel>
@@ -106,7 +104,118 @@
 
             </TabItem>
             <TabItem Header="Поиск площадок" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
-
+                <Grid HorizontalAlignment="Stretch">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Margin="5,5,5,5">
+                            <Label Content="Область поиска"></Label>
+                            <RadioButton GroupName="SearchArea" Content="Основная база сайтов"></RadioButton>
+                            <RadioButton GroupName="SearchArea" Content="Сайты сомнительного содержания"></RadioButton>
+                            <RadioButton GroupName="SearchArea" Content="Все сайты"></RadioButton>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="PR от "></Label>
+                                <TextBox Width="40" >
+                                    
+                                </TextBox>
+                                <Label Content=" до "></Label>
+                                <TextBox Width="40"></TextBox>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="тИЦ от "></Label>
+                                <TextBox Width="40"></TextBox>
+                                <Label Content=" до "></Label>
+                                <TextBox Width="40"></TextBox>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Внешних ссылок до "></Label>
+                                <TextBox Width="40"></TextBox>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Цена в месяц от "></Label>
+                                <TextBox Width="40"></TextBox>
+                                <Label Content=" до "></Label>
+                                <TextBox Width="40"></TextBox>
+                                <Label Content=" руб."></Label>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Домен старше "></Label>
+                                <TextBox Width="40"></TextBox>
+                                <Label Content=" дней"></Label>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="DMOZ "></Label>
+                                <ComboBox Width="80">
+                                    <ComboBoxItem Content="Да"></ComboBoxItem>
+                                    <ComboBoxItem Content="Нет"></ComboBoxItem>
+                                    <ComboBoxItem Content="Не важно"></ComboBoxItem>
+                                </ComboBox>
+                                <Label Content="YACA "></Label>
+                                <ComboBox Width="80">
+                                    <ComboBoxItem Content="Да"></ComboBoxItem>
+                                    <ComboBoxItem Content="Нет"></ComboBoxItem>
+                                    <ComboBoxItem Content="Не важно"></ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Margin="5,5,5,5">
+                            <Label Content="Уровень домена"></Label>
+                            <RadioButton GroupName="DomainLevel" Content="Все уровни"></RadioButton>
+                            <RadioButton GroupName="DomainLevel" Content="Второго уровня"></RadioButton>
+                            <RadioButton GroupName="DomainLevel" Content="Третьего уровня"></RadioButton>
+                            <Label Content="Уровень вложенности страницы"></Label>
+                            <CheckBox Content="Главная"></CheckBox>
+                            <CheckBox Content="2-ой уровень"></CheckBox>
+                            <CheckBox Content="3-ий уровень"></CheckBox>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Тематика площадки "></Label>
+                                <RadioButton GroupName="SiteCategories" Content="Все" Margin="0,5,0,5"/>
+                                <RadioButton GroupName="SiteCategories" Content="Выбрать" Margin="5,5,0,5" Click="SiteCategoriesChooseRadioButtonClick" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Тематика YACA "></Label>
+                                <RadioButton GroupName="YacaCategories" Content="Все" Margin="0,5,0,5"/>
+                                <RadioButton GroupName="YacaCategories" Content="Выбрать" Margin="5,5,0,5" Click="YacaCategoriesChooseRadioButtonClick" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Регион "></Label>
+                                <RadioButton GroupName="Regions" Content="Все" Margin="0,5,0,5"/>
+                                <RadioButton GroupName="Regions" Content="Выбрать" Margin="5,5,0,5" Click="RegionsChooseRadioButtonClick" />
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical">
+                                <Label Content="Доменная зона "></Label>
+                                <RadioButton GroupName="DomainZones" Content="Все" Margin="5,0,0,0"/>
+                                <RadioButton GroupName="DomainZones" Content="Популярные" Margin="5,0,0,0" Click="PopularDomainZonesChooseRadioButtonClick"/>
+                                <RadioButton GroupName="DomainZones" Content="Выбрать" Margin="5,0,0,0" Click="DomainZonesChooseRadioButtonClick" />
+                            </StackPanel>
+                            <StackPanel Orientation="Vertical">
+                                <Label Content="Ключевые слова"></Label>
+                                <TextBox Height="80" Width="225" TextWrapping="WrapWithOverflow"></TextBox>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Margin="5,5,5,5">
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Наличие в Yandex"></Label>
+                                <ComboBox Width="80">
+                                    <ComboBoxItem Content="Да"></ComboBoxItem>
+                                    <ComboBoxItem Content="Нет"></ComboBoxItem>
+                                    <ComboBoxItem Content="Не важно"></ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <Label Content="Наличие в Google"></Label>
+                                <ComboBox Width="80">
+                                    <ComboBoxItem Content="Да"></ComboBoxItem>
+                                    <ComboBoxItem Content="Нет"></ComboBoxItem>
+                                    <ComboBoxItem Content="Не важно"></ComboBoxItem>
+                                </ComboBox>
+                            </StackPanel>
+                            <Label Content="Страниц с каждого сайта"></Label>
+                            <RadioButton GroupName="PagesFromSite" Content="Одна"></RadioButton>
+                            <RadioButton GroupName="PagesFromSite" Content="Оптимальные"></RadioButton>
+                            <RadioButton GroupName="PagesFromSite" Content="Все"></RadioButton>
+                        </StackPanel>
+                    </StackPanel>
+                    <Button Content="Поиск" Width="50" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="10,10,10,10"></Button>
+                </Grid>
             </TabItem>
             <TabItem Header="Площадки" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
                 <FlowDocumentReader>
