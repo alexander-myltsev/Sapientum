@@ -1,5 +1,7 @@
 ﻿namespace Sapientum.Types.Sape
 
+open Sapientum
+
 open CookComputing.XmlRpc
 
 open System
@@ -186,7 +188,11 @@ type Link(xmlRpcStruct:XmlRpcStruct) =
     let _pageUri = unbox<String> xmlRpcStruct.["page_uri"]
     let _price   = unbox<Double> xmlRpcStruct.["price"]
   
-    member x.Id = _id
+    member x.Id      = _id
+    member x.Text    = _text
+    member x.SiteUrl = _siteUrl
+    member x.PageUri = _pageUri
+    member x.Price   = _price
   
     override x.ToString() = sprintf "%d %s %s %s %.2f" _id _siteUrl _pageUri _text _price
   
@@ -208,3 +214,126 @@ type Page(xmlRpcStruct:XmlRpcStruct) =
     override x.ToString() = sprintf "%s %d %.2f" _uri _level _price
   
     static member create xmlRpcStruct = new Page(xmlRpcStruct)
+
+// ----- CustomFilter -----
+
+type SearchArea = 
+    | AllSites = 0
+    | PrimaryBase = 1
+    | DubiousContent = 2
+
+type TripleAnswer = 
+    | Yes = 0
+    | No = 1
+    | DoesNotMatter = 2
+
+type DateAdded = 
+    | WholeTime = 0
+    | Today = 1
+    | Last3Days = 2
+    | Last7Days = 3
+    | LastMonth = 4
+
+type PagesFromSite = 
+    | Single = 0
+    | Optimal = 1
+    | All = 2
+
+type Categories = 
+    | All
+    | Selected of string array
+
+type DomainLevel = 
+    | AllLevels
+    | Level2
+    | Level3
+
+type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*int option, currentCitationIndexRange:int option*int option, 
+                  externalLinksCount:int option, priceRange:float option*float option, domainDaysAge:int option, 
+                  isDmoz:TripleAnswer, isYaca:TripleAnswer, domainLevel:DomainLevel, nestedLevel:int*int,
+                  siteCategories:Categories, yacaCategories:Categories, regions:Categories, domainZones:Categories,
+                  words:string, dateAdded:DateAdded, showWithPlacedLinks:bool,
+                  isInYandex:TripleAnswer, isInGoogle:TripleAnswer, pagesFromSite:PagesFromSite) = 
+    
+    member x.ProjectUrlId = projectUrlId
+
+    member x.ToXmlRpcStruct() = 
+        let xmlRpcStruct = new XmlRpcStruct()
+        xmlRpcStruct.Add("words", words)
+        xmlRpcStruct
+
+    static member Create(projectUrlId:int, searchAreaPrimaryBase:bool, searchAreaDubiousContent:bool, searchAreaAllSites:bool,
+                         prFrom:string, prTo:string, currentCitationIndexFrom:string, currentCitationIndexTo:string,
+                         externalLinksCount:string, priceFrom:string, priceTo:string, domainDaysAge:string,
+                         isDmoz:int, isYaca:int, 
+                         domainLevelAllLevels:bool, domainLevelIs2nd:bool, domainLevelIs3rd:bool,
+                         nestedLevelMain:bool, nestedLevel2nd:bool, nestedLevel3rd:bool,
+                         siteCategoriesIsAll:bool, siteCategoriesSelected:string array,
+                         yacaCategoriesIsAll:bool, yacaCategoriesSelected:string array,
+                         regionsIsAll:bool, regionsSelected:string array,
+                         domainZonesIsAll:bool, domainZonesSelected:string array,
+                         words:string, dateAdded:int, showWithPlacedLinks:bool,
+                         isInYandex:int, isInGoogle:int, 
+                         pagesFromSiteSingle:bool, pagesFromSiteOptimal:bool, pagesFromSiteAll:bool) = 
+        let searchArea = 
+            match searchAreaPrimaryBase, searchAreaDubiousContent, searchAreaAllSites with 
+            | true, false, false -> SearchArea.PrimaryBase
+            | false, true, false -> SearchArea.DubiousContent
+            | false, false, true -> SearchArea.AllSites
+            | _ -> failwith "Filter.Create/searchArea"
+        let prRange = (Helper.Parse<int>(prFrom), Helper.Parse<int>(prTo))
+        let currentCitationIndexRange = (Helper.Parse<int>(currentCitationIndexFrom), Helper.Parse<int>(currentCitationIndexTo))
+        let externalLinksCount = Helper.Parse<int>(externalLinksCount)
+        let priceRange = (Helper.Parse<float>(priceFrom), Helper.Parse<float>(priceTo))
+        let domainDaysAge = Helper.Parse<int>(domainDaysAge)
+        let isDmoz = enum<TripleAnswer> isDmoz
+        let isYaca = enum<TripleAnswer> isYaca
+        let domainLevel = 
+            match domainLevelAllLevels, domainLevelIs2nd, domainLevelIs3rd with 
+            | true, false, false -> DomainLevel.AllLevels
+            | false, true, false -> DomainLevel.Level2
+            | false, false, true -> DomainLevel.Level3
+            | _ -> failwith "Filter.Create/domainLevel"
+        let netstedLevel =
+            let getNestedLevelFrom = 
+                match nestedLevelMain, nestedLevel2nd, nestedLevel3rd with
+                | true, _, _ -> 1
+                | false, true, _ -> 2
+                | false, false, true -> 3
+                | false, false, false -> 0
+            let getNestedLevelTo = 
+                match nestedLevelMain, nestedLevel2nd, nestedLevel3rd with
+                | true, false, false -> 1
+                | _, true, false -> 2
+                | _, _, true -> 3
+                | false, false, false -> 0
+            getNestedLevelFrom,getNestedLevelTo
+        let siteCategories = 
+            if siteCategoriesIsAll then Categories.All
+            else Categories.Selected(siteCategoriesSelected)
+        let yacaCategories = 
+            if yacaCategoriesIsAll then Categories.All
+            else Categories.Selected(yacaCategoriesSelected)
+        let regions = 
+            if regionsIsAll then Categories.All
+            else Categories.Selected(regionsSelected)
+        let domainZones = 
+            if domainZonesIsAll then Categories.All
+            else Categories.Selected(domainZonesSelected)
+//        let words = 
+//            let wordsSplitted = words.Split([| "," |], StringSplitOptions.RemoveEmptyEntries)
+//            if wordsSplitted.Length = 0 then None
+//            else Some ( wordsSplitted |> Array.map (fun x -> x.Trim()) )
+        let dateAdded = enum<DateAdded> dateAdded
+        let isInYandex = enum<TripleAnswer> isInYandex
+        let isInGoogle = enum<TripleAnswer> isInGoogle
+        let pagesFromSite = 
+            match pagesFromSiteSingle, pagesFromSiteOptimal, pagesFromSiteAll with
+            | true, false, false -> PagesFromSite.Single
+            | false, true, false -> PagesFromSite.Optimal
+            | false, false, true -> PagesFromSite.All
+            | _ -> failwith "Filter.Create/pagesFromSite"
+        let filter = new CustomFilter(projectUrlId, searchArea, prRange, currentCitationIndexRange, externalLinksCount, priceRange, domainDaysAge, 
+                                      isDmoz, isYaca, domainLevel, netstedLevel, siteCategories, yacaCategories, regions, domainZones, 
+                                      words, dateAdded, showWithPlacedLinks, isInYandex, isInGoogle, pagesFromSite)
+        filter

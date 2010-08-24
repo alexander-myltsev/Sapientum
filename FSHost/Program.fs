@@ -5,9 +5,13 @@ open Sapientum.Types.Sape
 open Sapientum.XmlRpc
 
 open System
+open System.IO
+open System.Net
 open System.Diagnostics
 open System.Windows
 open Sapientum.Types
+
+open Microsoft.FSharp.Control.WebExtensions
 
 open WpfControlLib
 
@@ -55,10 +59,32 @@ let ProcessLogin (sapeApi:SapeApi) (loginInfoWpfData:LoginInfo) (passwordHash:St
         
     } |> Async.Start
 
-let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) = 
+let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) (dataProviderForWaitingSites:DataProviderForWaitingSites) = 
     async {
         let urlLinks = sapeApi.GetUrlLinks prjUrlId UrlLinkStatus.WaitSEO
         Debug.WriteLine(sprintf "urlLinks.Length: %d" urlLinks.Length)
+        dataProviderForWaitingSites.GetRows(urlLinks.Length)
+        let getTitleAsync (urlLink:Link) = async {
+                let urlStr = sprintf "%s%s" urlLink.SiteUrl urlLink.PageUri
+                let req = HttpWebRequest.Create(urlStr)
+                try 
+                    let! resp = req.AsyncGetResponse()
+                    let stream = resp.GetResponseStream()
+                    use reader = new StreamReader(stream)
+                    let! streamString = reader.AsyncReadToEnd()
+                    Debug.WriteLine(sprintf "streamString.Substring(0,10): %s" (streamString.Substring(0,10)))
+                    let title = streamString.Substring(0,10)
+                    //addDataPiece title
+                    dataProviderForWaitingSites.AddWaitingSite urlStr
+                with
+                | _ -> dataProviderForWaitingSites.AddWaitingSite "Не получен"
+            }
+        let k = urlLinks 
+                |> List.map getTitleAsync 
+                |> Async.Parallel 
+                |> Async.Ignore |> Async.Start
+                //|> Async.RunSynchronously
+        //Debug.WriteLine(sprintf "urlLinks.Length: %d" k.Length)
         ()
     } |> Async.Start
 
@@ -69,10 +95,23 @@ do
     let win = new MainWindow()
     let loginInfoWpfData = win.GetLoginInfo()
     let projectsWpfData = win.GetProjects()
+    let dataProviderForSearchedSites = win.GetDataProviderForSearchedSites()
+    let dataProviderForWaitingSites  = win.GetDataProviderForWaitingSites()
     win.ButtonLoginClick 
     |> Event.add (fun x -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
-    win.ProjectUrlSelected
-    |> Event.add (fun prjUrlId -> ProcessProjectSelection sapeApi prjUrlId)
+//    win.ProjectUrlSelected
+//    |> Event.add (fun prjUrlId -> ProcessProjectSelection sapeApi prjUrlId)
+    win.WaitingSitesRefreshClick
+    |> Event.add (fun prjUrlId ->
+            ProcessProjectSelection sapeApi prjUrlId dataProviderForWaitingSites
+        )
+    win.SearchSitesRequested
+    |> Event.add (fun customFilter -> 
+            let filters = sapeApi.GetFilters()
+            let sites = sapeApi.SearchSites customFilter.ProjectUrlId (customFilter.ToXmlRpcStruct())
+            dataProviderForSearchedSites.AddRow 3
+            Debug.WriteLine(sprintf "filters.Length: %d" filters.Length)
+        )
 
 //        System.Threading.ThreadPool.QueueUserWorkItem(
 //            fun state -> 

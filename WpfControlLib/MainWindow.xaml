@@ -3,12 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:WpfControlLib="clr-namespace:WpfControlLib" xmlns:Types="clr-namespace:Sapientum.Types.Wpf;assembly=FSTypes" xmlns:Converters="clr-namespace:WpfControlLib.Converters" 
         Title="Сапиентум" Height="550" Width="850" WindowStartupLocation="CenterScreen" Loaded="WindowLoaded">
     <Grid Name="mainGrid">
-        <Grid.DataContext>
-            <ObjectDataProvider x:Name="dataProvider" ObjectType="{x:Type Types:DataProvider}"/>
-        </Grid.DataContext>
+        <!--<Grid.DataContext>
+             <ObjectDataProvider x:Name="dataProvider" ObjectType="{x:Type Types:DataProvider}"/> 
+        </Grid.DataContext>-->
         <Grid.Resources>
             <Types:LoginInfo x:Key="loginInfo" />
             <Types:Projects x:Key="projects" />
+            <Types:DataProviderForSearchedSites x:Key="dataProviderForSearchedSites" />
+            <Types:DataProviderForWaitingSites x:Key="dataProviderForWaitingSites" />
+
             <Converters:LoginStatusToButtonIsEnabledConverter x:Key="loginStatusToButtonIsEnabledConverter" />
             <Converters:LoginStatusToTabsIsEnabledConverter x:Key="loginStatusToTabsIsEnabledConverter" />
             <Converters:LoginStatusToStatusBarMsgConverter x:Key="loginStatusToStatusBarMsgConverter" />
@@ -101,7 +104,17 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Ждут подтверждения" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
+                <Grid>
+                    <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Обновить" Margin="5,5,0,0" Click="WaitingSitesButtonOnClick"></Button>
+                    <FlowDocumentReader Margin="0,40,0,0">
+                        <FlowDocumentReader.Resources>
 
+                        </FlowDocumentReader.Resources>
+                        <FlowDocument WpfControlLib:BindableExtender.BindableTable="{Binding Source={StaticResource dataProviderForWaitingSites}, Path=Metadata}">
+                            <Paragraph/>
+                        </FlowDocument>
+                    </FlowDocumentReader>
+                </Grid>
             </TabItem>
             <TabItem Header="Поиск площадок" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
                 <Grid HorizontalAlignment="Stretch">
@@ -112,48 +125,46 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Margin="5,5,5,5" Grid.Column="0">
                         <Label Content="Область поиска"></Label>
-                        <RadioButton GroupName="SearchArea" Content="Основная база сайтов"></RadioButton>
-                        <RadioButton GroupName="SearchArea" Content="Сайты сомнительного содержания"></RadioButton>
-                        <RadioButton GroupName="SearchArea" Content="Все сайты" IsChecked="True"></RadioButton>
+                        <RadioButton Name="radioButtonPrimaryBase" GroupName="SearchArea" Content="Основная база сайтов"></RadioButton>
+                        <RadioButton Name="radioButtonDubiousContent" GroupName="SearchArea" Content="Сайты сомнительного содержания"></RadioButton>
+                        <RadioButton Name="radioButtonAllSites" GroupName="SearchArea" Content="Все сайты" IsChecked="True"></RadioButton>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="PR от "></Label>
-                            <TextBox Width="40" >
-
-                            </TextBox>
+                            <TextBox Width="40" Name="textBoxPrFrom"/>
                             <Label Content=" до "></Label>
-                            <TextBox Width="40"></TextBox>
+                            <TextBox Width="40" Name="textBoxPrTo"></TextBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="тИЦ от "></Label>
-                            <TextBox Width="40"></TextBox>
+                            <TextBox Width="40" Name="textBoxCitationIndexFrom"></TextBox>
                             <Label Content=" до "></Label>
-                            <TextBox Width="40"></TextBox>
+                            <TextBox Width="40" Name="textBoxCitationIndexTo"></TextBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Внешних ссылок до "></Label>
-                            <TextBox Width="40"></TextBox>
+                            <TextBox Width="40" Name="textBoxExternalLinksCount"></TextBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Цена в месяц от "></Label>
-                            <TextBox Width="40"></TextBox>
+                            <TextBox Width="40" Name="textBoxPriceFrom"></TextBox>
                             <Label Content=" до "></Label>
-                            <TextBox Width="40"></TextBox>
+                            <TextBox Width="40" Name="textBoxPriceTo"></TextBox>
                             <Label Content=" руб."></Label>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Домен старше "></Label>
-                            <TextBox Width="40"></TextBox>
+                            <TextBox Width="40" Name="textBoxDomainDaysAge"></TextBox>
                             <Label Content=" дней"></Label>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="DMOZ "></Label>
-                            <ComboBox Width="80">
+                            <ComboBox Width="80" Name="comboBoxIsDmoz">
                                 <ComboBoxItem Content="Да"></ComboBoxItem>
                                 <ComboBoxItem Content="Нет"></ComboBoxItem>
                                 <ComboBoxItem Content="Не важно" IsSelected="True"></ComboBoxItem>
                             </ComboBox>
                             <Label Content="YACA "></Label>
-                            <ComboBox Width="80">
+                            <ComboBox Width="80" Name="comboBoxIsYaca">
                                 <ComboBoxItem Content="Да"></ComboBoxItem>
                                 <ComboBoxItem Content="Нет"></ComboBoxItem>
                                 <ComboBoxItem Content="Не важно" IsSelected="True"></ComboBoxItem>
@@ -162,43 +173,43 @@
                     </StackPanel>
                     <StackPanel Margin="5,5,5,5" Grid.Column="1">
                         <Label Content="Уровень домена"></Label>
-                        <RadioButton GroupName="DomainLevel" Content="Все уровни" IsChecked="True"></RadioButton>
-                        <RadioButton GroupName="DomainLevel" Content="Второго уровня"></RadioButton>
-                        <RadioButton GroupName="DomainLevel" Content="Третьего уровня"></RadioButton>
+                        <RadioButton GroupName="DomainLevel" Name="radionButtonAllLevels" Content="Все уровни" IsChecked="True"></RadioButton>
+                        <RadioButton GroupName="DomainLevel" Name="radionButtonSecondLevel" Content="Второго уровня"></RadioButton>
+                        <RadioButton GroupName="DomainLevel" Name="radionButtonThirdLevel" Content="Третьего уровня"></RadioButton>
                         <Label Content="Уровень вложенности страницы"></Label>
-                        <CheckBox Content="Главная"></CheckBox>
-                        <CheckBox Content="2-ой уровень"></CheckBox>
-                        <CheckBox Content="3-ий уровень"></CheckBox>
+                        <CheckBox Content="Главная" Name="checkBoxNestedLevelMain"></CheckBox>
+                        <CheckBox Content="2-ой уровень" Name="checkBoxNestedLevel2nd"></CheckBox>
+                        <CheckBox Content="3-ий уровень" Name="checkBoxNestedLevel3rd"></CheckBox>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Тематика площадки "></Label>
-                            <RadioButton GroupName="SiteCategories" Content="Все" Margin="0,5,0,5" IsChecked="True"/>
+                            <RadioButton GroupName="SiteCategories" Content="Все" Margin="0,5,0,5" IsChecked="True" Name="radioButtonSiteCategoriesIsAll"/>
                             <RadioButton GroupName="SiteCategories" Content="Выбрать" Margin="5,5,0,5" Click="SiteCategoriesChooseRadioButtonClick" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Тематика YACA "></Label>
-                            <RadioButton GroupName="YacaCategories" Content="Все" Margin="0,5,0,5" IsChecked="True"/>
+                            <RadioButton GroupName="YacaCategories" Content="Все" Margin="0,5,0,5" IsChecked="True" Name="radioButtonYacaCategoriesIsAll"/>
                             <RadioButton GroupName="YacaCategories" Content="Выбрать" Margin="5,5,0,5" Click="YacaCategoriesChooseRadioButtonClick" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Регион "></Label>
-                            <RadioButton GroupName="Regions" Content="Все" Margin="0,5,0,5" IsChecked="True"/>
+                            <RadioButton GroupName="Regions" Content="Все" Margin="0,5,0,5" IsChecked="True" Name="radioButtonRegionsIsAll"/>
                             <RadioButton GroupName="Regions" Content="Выбрать" Margin="5,5,0,5" Click="RegionsChooseRadioButtonClick" />
                         </StackPanel>
                         <StackPanel Orientation="Vertical">
                             <Label Content="Доменная зона "></Label>
-                            <RadioButton GroupName="DomainZones" Content="Все" Margin="5,0,0,0" IsChecked="True"/>
+                            <RadioButton GroupName="DomainZones" Content="Все" Margin="5,0,0,0" IsChecked="True" Name="radioButtonDomainZonesIsAll"/>
                             <RadioButton GroupName="DomainZones" Content="Популярные" Margin="5,0,0,0" Click="PopularDomainZonesChooseRadioButtonClick"/>
                             <RadioButton GroupName="DomainZones" Content="Выбрать" Margin="5,0,0,0" Click="DomainZonesChooseRadioButtonClick" />
                         </StackPanel>
                         <StackPanel Orientation="Vertical">
                             <Label Content="Ключевые слова"></Label>
-                            <TextBox Height="80" TextWrapping="WrapWithOverflow"></TextBox>
+                            <TextBox Height="80" TextWrapping="WrapWithOverflow" Name="textBoxWords" Text="квартиры, челябинск"></TextBox>
                         </StackPanel>
                     </StackPanel>
                     <StackPanel Margin="5,5,5,5" Grid.Column="2">
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Наличие в Yandex"></Label>
-                            <ComboBox Width="80">
+                            <ComboBox Width="80" Name="comboBoxIsInYandex">
                                 <ComboBoxItem Content="Да" IsSelected="True"></ComboBoxItem>
                                 <ComboBoxItem Content="Нет"></ComboBoxItem>
                                 <ComboBoxItem Content="Не важно"></ComboBoxItem>
@@ -206,19 +217,20 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <Label Content="Наличие в Google"></Label>
-                            <ComboBox Width="80">
+                            <ComboBox Width="80" Name="comboBoxIsInGoogle">
                                 <ComboBoxItem Content="Да"></ComboBoxItem>
                                 <ComboBoxItem Content="Нет"></ComboBoxItem>
                                 <ComboBoxItem Content="Не важно" IsSelected="True"></ComboBoxItem>
                             </ComboBox>
                         </StackPanel>
                         <Label Content="Страниц с каждого сайта"></Label>
-                        <RadioButton GroupName="PagesFromSite" Content="Одна"></RadioButton>
-                        <RadioButton GroupName="PagesFromSite" Content="Оптимальные" IsChecked="True"></RadioButton>
-                        <RadioButton GroupName="PagesFromSite" Content="Все"></RadioButton>
+                        <RadioButton GroupName="PagesFromSite" Content="Одна" Name="radioButtonPagesFromSiteSingle"></RadioButton>
+                        <RadioButton GroupName="PagesFromSite" Content="Оптимальные" IsChecked="True" Name="radioButtonPagesFromSiteOptimal"></RadioButton>
+                        <RadioButton GroupName="PagesFromSite" Content="Все" Name="radioButtonPagesFromSiteAll"></RadioButton>
+                        <CheckBox Content="Отображать с размещенными ссылками" Margin="0,8,0,0" Name="checkBoxShowWithPlacedLinks"></CheckBox>
                         <StackPanel>
                             <Label Content="Время добавления в систему"></Label>
-                            <ComboBox Width="150" HorizontalAlignment="Left">
+                            <ComboBox Width="150" HorizontalAlignment="Left" Name="comboBoxDateAdded">
                                 <ComboBoxItem Content="За все время" IsSelected="True"></ComboBoxItem>
                                 <ComboBoxItem Content="Сегодня"></ComboBoxItem>
                                 <ComboBoxItem Content="За последние 3 дня"></ComboBoxItem>
@@ -227,15 +239,15 @@
                             </ComboBox>
                         </StackPanel>
                     </StackPanel>
-                    <Button Grid.Column="2" Content="Поиск" Width="50" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="10,10,10,10"></Button>
+                    <Button Grid.Column="2" Content="Поиск" Width="50" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="10,10,10,10" Click="SearchSitesButtonClick"></Button>
                 </Grid>
             </TabItem>
             <TabItem Header="Площадки" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
                 <FlowDocumentReader>
                     <FlowDocumentReader.Resources>
-                        <WpfControlLib:DataProvider1 x:Key="dataProvider1" />
+
                     </FlowDocumentReader.Resources>
-                    <FlowDocument WpfControlLib:BindableExtender.BindableTable="{Binding Source={StaticResource dataProvider1}, Path=Metadata}">
+                    <FlowDocument WpfControlLib:BindableExtender.BindableTable="{Binding Source={StaticResource dataProviderForSearchedSites}, Path=Metadata}">
                         <Paragraph/>
                     </FlowDocument>
                 </FlowDocumentReader>

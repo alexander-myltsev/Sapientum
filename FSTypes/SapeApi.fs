@@ -117,7 +117,7 @@ type SapeApi() =
     //member x.SearchSites urlId filter pageNumber positionsCount = sapeProxy.SearchSites urlId filter pageNumber positionsCount
 
     member x.SearchSites urlId filter =
-        let sitesCount = 100
+        let sitesCount = 1000
         let rec searchSites pageNumber (resultSites:XmlRpcStruct list) =
             let res = 
                 try 
@@ -127,7 +127,7 @@ type SapeApi() =
                     | :? XmlRpcFaultException as ex when ex.FaultCode = 7000 -> printfn "%s" ex.Message; None
                     | ex -> raise ex
             //printfn "resultSites.Length = %d" resultSites.Length
-            printfn "количество скачанных заголовков сайтов: %d" resultSites.Length
+            System.Diagnostics.Debug.WriteLine(sprintf "количество скачанных заголовков сайтов: %d" resultSites.Length)
             match res with 
             | Some [] -> resultSites |> List.map Site.create  //searchSites pageNumber resultSites
             | Some sites -> 

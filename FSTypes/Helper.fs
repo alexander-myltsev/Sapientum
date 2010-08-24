@@ -35,3 +35,13 @@ module Helper =
     let streamReader (e:Encoding) (s:Stream) = new StreamReader(s,e)
     type StreamReader with 
         static member readToEnd (sr:StreamReader) = sr.ReadToEnd()
+
+    let inline Parse< ^T when ^T : (static member Parse : string -> ^T) > (stringToParse:string) : ^T option = 
+//        let mutable res = LanguagePrimitives.GenericZero
+//        let v = ( ^T : (static member TryParse : string*byref< ^T> -> ^T) (stringToParse,&res))
+//        Some v
+        try
+            let v = ( ^T : (static member Parse : string -> ^T) stringToParse)
+            Some v
+        with
+        | :? Exception as ex -> None

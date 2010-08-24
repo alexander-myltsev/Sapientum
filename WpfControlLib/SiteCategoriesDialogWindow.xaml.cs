@@ -98,5 +98,13 @@ MP3
             var forAllCheckbox = (CheckBox)sender;
             _checkBoxes.ForEach(chkBox => chkBox.IsChecked = forAllCheckbox.IsChecked);
         }
+
+        public string[] GetSelected()
+        {
+            return _checkBoxes
+                .Where(box => (bool)box.IsChecked)
+                .Select(box => (string)box.Content)
+                .ToArray();
+        }
     }
 }

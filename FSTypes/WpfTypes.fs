@@ -1,5 +1,7 @@
 ﻿namespace Sapientum.Types.Wpf
 
+open Sapientum
+
 open System
 open System.Collections.Generic
 open System.Collections.Specialized
@@ -20,7 +22,7 @@ type WpfData() =
     let _sync = new Object()
 
     member x.PropertyChangedEvent = _propertyChangedEvent
-
+    member x.Sync = _sync
     member x.This = x
 
     member x.TriggerChangeProperties changedPropertiesNames = 
@@ -139,5 +141,86 @@ type Projects() =
 
     member x.Projects = _projects
 
-module DataProvider = 
-    let mutable Login = "login"
+
+open System.Windows.Documents
+open System.Windows.Controls
+
+type DataProviderForWaitingSites() =
+    inherit WpfCollectionData()
+
+    let _table = new Table()
+    let counter = ref 0
+    let _rowIndexCounter = 
+        fun () -> 
+            let c = !counter
+            counter := !counter + 1
+            c
+
+    let runs = new List<Run>()
+
+    member x.GetRows (count:int) =
+        counter := 1
+        x.Caller(fun () ->
+            for i in 0..count do
+                let rowGrp = new TableRowGroup()
+                _table.RowGroups.Add(rowGrp)
+                let rowGrp = new TableRowGroup()
+                let row = new TableRow()
+                rowGrp.Rows.Add(row)
+                let run = new Run()
+                row.Cells.Add(new TableCell(new Paragraph(run)))
+                runs.Add(run)
+                _table.RowGroups.Add(rowGrp)
+        )
+    
+    member x.AddWaitingSite (title:string) =
+        x.Caller(fun () ->
+            runs.[_rowIndexCounter()].Text <- title
+//            let rowGrp = new TableRowGroup()
+//            _table.RowGroups.Add(rowGrp)
+//            let rowGrp = new TableRowGroup()
+//            let row = new TableRow()
+//            rowGrp.Rows.Add(row)
+//            let run = new Run(title)
+//            row.Cells.Add(new TableCell(new Paragraph(run)))
+//            runs.Add(run)
+//            _table.RowGroups.Add(rowGrp)
+        )
+
+    member x.Metadata = _table
+
+type DataProviderForSearchedSites() = 
+    let _table = new Table()
+
+    member x.BuildTable() = 
+        for i in 0..10 do
+            let rowGrp = new TableRowGroup()
+            _table.RowGroups.Add(rowGrp)
+            let row = new TableRow()
+            rowGrp.Rows.Add(row)
+            row.Cells.Add(new TableCell(new Paragraph(new Run(sprintf "datarow %d" i))))
+
+            let pg = new Paragraph()
+            let stackPanel = new StackPanel()
+            let label1 = new Label ( Content = sprintf "1-Contents-%d" i )
+            let label2 = new Label ( Content = sprintf "2-Contents-%d" i )
+            let label3 = new Label ( Content = sprintf "3-Contents-%d" i )
+            let label4 = new Label ( Content = sprintf "4-Contents-%d" i )
+            stackPanel.Children.Add(label1) |> ignore
+            stackPanel.Children.Add(label2) |> ignore
+            stackPanel.Children.Add(label3) |> ignore
+            stackPanel.Children.Add(label4) |> ignore
+
+            pg.Inlines.Add(stackPanel)
+
+            row.Cells.Add(new TableCell(pg))
+        _table
+
+    member x.AddRow (index:int) = 
+        let rowGrp = new TableRowGroup()
+        _table.RowGroups.Add(rowGrp)
+        let row = new TableRow()
+        rowGrp.Rows.Add(row)
+        row.Cells.Add(new TableCell(new Paragraph(new Run(sprintf "datarow %d" index))))
+    
+    member x.Metadata = x.BuildTable()

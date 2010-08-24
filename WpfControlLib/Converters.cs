@@ -13,9 +13,9 @@ namespace WpfControlLib
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
-#if DEBUG
-                return true;
-#else
+//#if DEBUG
+//                return true;
+//#else
                 var loginStatus = (LoginStatus)value;
                 bool result;
                 switch (loginStatus)
@@ -32,7 +32,7 @@ namespace WpfControlLib
                         throw new ArgumentOutOfRangeException();
                 }
                 return result;
-#endif
+//#endif
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

@@ -192,5 +192,13 @@ Hardware
             var checkBox = (CheckBox)sender;
             _checkBoxes.ForEach(chkBox => chkBox.IsChecked = checkBox.IsChecked);
         }
+
+        public string[] GetSelected()
+        {
+            return _checkBoxes
+                .Where(box => (bool)box.IsChecked)
+                .Select(box => (string)box.Content)
+                .ToArray();
+        }
     }
 }
