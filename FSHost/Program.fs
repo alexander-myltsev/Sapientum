@@ -8,6 +8,7 @@ open System
 open System.IO
 open System.Net
 open System.Diagnostics
+open System.Text
 open System.Windows
 open Sapientum.Types
 
@@ -59,32 +60,86 @@ let ProcessLogin (sapeApi:SapeApi) (loginInfoWpfData:LoginInfo) (passwordHash:St
         
     } |> Async.Start
 
+let getTitle (headers:WebHeaderCollection) (responseStream:Stream) = 
+    async {
+        let buffer = Array.create 2048 0uy
+        let! bytesRead = responseStream.AsyncRead (buffer, 0, buffer.Length)
+        let memoryStream = new MemoryStream(buffer, 0, bytesRead)
+        let html = 
+            try
+                let header = headers.[HttpResponseHeader.ContentType]
+                match header with 
+                | ParseRegex "charset=([-\w\d]+)" ["utf8"] -> memoryStream |> streamReader Encoding.UTF8 |> StreamReader.readToEnd
+                | ParseRegex "charset=([-\w\d]+)" ["windows-1251"] -> memoryStream |> streamReader (Encoding.GetEncoding 1251) |> StreamReader.readToEnd
+                | ParseRegex "charset=([-\w\d]+)" [charset] -> memoryStream |> streamReader (Encoding.GetEncoding charset) |> StreamReader.readToEnd
+                | h -> 
+                    let html = memoryStream |> streamReader (Encoding.GetEncoding 1251) |> StreamReader.readToEnd
+                    match html with 
+                    | ParseRegex @"charset=([-\w\d]+)" [charset] -> 
+                        memoryStream.Position<-0L
+                        let buffer = Array.create 2048 0uy
+                        let bytesRead = memoryStream.Read(buffer, 0, buffer.Length)
+                        Encoding.GetEncoding(charset).GetString(buffer, 0, bytesRead)
+                    | _ -> html
+            with 
+            | :? Exception as ex -> 
+                let buffer = Array.create 2000 0uy
+                let bytesRead = memoryStream.Read(buffer, 0, buffer.Length)
+                Encoding.GetEncoding(1251).GetString(buffer, 0, bytesRead)
+        match html with
+        | ParseRegex @"<title>(.*?)</title>" [title] -> return title
+        | _ -> return "не найден на странице"
+    }
+
 let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) (dataProviderForWaitingSites:DataProviderForWaitingSites) = 
     async {
         let urlLinks = sapeApi.GetUrlLinks prjUrlId UrlLinkStatus.WaitSEO
         Debug.WriteLine(sprintf "urlLinks.Length: %d" urlLinks.Length)
-        dataProviderForWaitingSites.GetRows(urlLinks.Length)
+        dataProviderForWaitingSites.GetRows urlLinks
         let getTitleAsync (urlLink:Link) = async {
                 let urlStr = sprintf "%s%s" urlLink.SiteUrl urlLink.PageUri
-                let req = HttpWebRequest.Create(urlStr)
+                let req = HttpWebRequest.Create(urlStr, Timeout = 5000)
                 try 
                     let! resp = req.AsyncGetResponse()
-                    let stream = resp.GetResponseStream()
-                    use reader = new StreamReader(stream)
-                    let! streamString = reader.AsyncReadToEnd()
-                    Debug.WriteLine(sprintf "streamString.Substring(0,10): %s" (streamString.Substring(0,10)))
-                    let title = streamString.Substring(0,10)
-                    //addDataPiece title
-                    dataProviderForWaitingSites.AddWaitingSite urlStr
+                    Debug.WriteLine(sprintf "req.AsyncGetResponse(): %s" urlLink.SiteUrl)
+                    let respStream = resp.GetResponseStream()
+                    //Debug.WriteLine(sprintf "streamString.Substring(0,10): %s" (streamString.Substring(0,10)))
+                    let! title = getTitle resp.Headers respStream
+                    dataProviderForWaitingSites.UpdateTitle (urlLink, title)
                 with
-                | _ -> dataProviderForWaitingSites.AddWaitingSite "Не получен"
+                | _ -> 
+                    Debug.WriteLine(sprintf "req.AsyncGetResponse(): (exc) %s" urlLink.SiteUrl)
+                    dataProviderForWaitingSites.UpdateTitle (urlLink, "Не получен")
+
+                req.Abort()
             }
         let k = urlLinks 
                 |> List.map getTitleAsync 
                 |> Async.Parallel 
                 |> Async.Ignore |> Async.Start
                 //|> Async.RunSynchronously
-        //Debug.WriteLine(sprintf "urlLinks.Length: %d" k.Length)
+
+
+//        urlLinks |> List.iter (fun urlLink ->
+//            let urlStr = sprintf "%s%s" urlLink.SiteUrl urlLink.PageUri
+//            let req = HttpWebRequest.Create(urlStr, Timeout = 10000)
+//            try 
+//                let resp = req.GetResponse()
+//                Debug.WriteLine(sprintf "req.GetResponse(): %s" urlLink.SiteUrl)
+//                let respStream = resp.GetResponseStream()
+//                //use reader = new StreamReader(stream)
+//                //let! streamString = reader.AsyncReadToEnd()
+//                //Debug.WriteLine(sprintf "streamString.Substring(0,10): %s" (streamString.Substring(0,10)))
+//                let title = getTitle resp.Headers respStream
+//                //addDataPiece title
+//                dataProviderForWaitingSites.UpdateTitle (urlLink, title)
+//            with
+//            | _ -> 
+//                Debug.WriteLine(sprintf "req.GetResponse(): (exc) %s" urlLink.SiteUrl)
+//                dataProviderForWaitingSites.UpdateTitle (urlLink, "Не получен")
+//
+//            req.Abort()
+//        )
         ()
     } |> Async.Start
 
@@ -97,6 +152,9 @@ do
     let projectsWpfData = win.GetProjects()
     let dataProviderForSearchedSites = win.GetDataProviderForSearchedSites()
     let dataProviderForWaitingSites  = win.GetDataProviderForWaitingSites()
+#if DEBUG
+    ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData
+#endif
     win.ButtonLoginClick 
     |> Event.add (fun x -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
 //    win.ProjectUrlSelected

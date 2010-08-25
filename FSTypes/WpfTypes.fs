@@ -144,49 +144,81 @@ type Projects() =
 
 open System.Windows.Documents
 open System.Windows.Controls
+open Sapientum.Types.Sape
 
 type DataProviderForWaitingSites() =
     inherit WpfCollectionData()
 
-    let _table = new Table()
-    let counter = ref 0
-    let _rowIndexCounter = 
-        fun () -> 
-            let c = !counter
-            counter := !counter + 1
-            c
-
-    let runs = new List<Run>()
-
-    member x.GetRows (count:int) =
-        counter := 1
-        x.Caller(fun () ->
-            for i in 0..count do
-                let rowGrp = new TableRowGroup()
-                _table.RowGroups.Add(rowGrp)
-                let rowGrp = new TableRowGroup()
-                let row = new TableRow()
-                rowGrp.Rows.Add(row)
-                let run = new Run()
-                row.Cells.Add(new TableCell(new Paragraph(run)))
-                runs.Add(run)
-                _table.RowGroups.Add(rowGrp)
-        )
+    let _table = new Table( CellSpacing = 10.0 )
+    let _handler (e:Windows.Navigation.RequestNavigateEventArgs) = 
+        Diagnostics.Process.Start(e.Uri.ToString()) |> ignore
+    let _map = ref Map.empty
     
-    member x.AddWaitingSite (title:string) =
+    let navigateUri (urlLink:Link) = sprintf "%s%s" urlLink.SiteUrl urlLink.PageUri 
+
+    member x.GetRows (urlLinks:Link list) =
         x.Caller(fun () ->
-            runs.[_rowIndexCounter()].Text <- title
-//            let rowGrp = new TableRowGroup()
-//            _table.RowGroups.Add(rowGrp)
-//            let rowGrp = new TableRowGroup()
-//            let row = new TableRow()
-//            rowGrp.Rows.Add(row)
-//            let run = new Run(title)
-//            row.Cells.Add(new TableCell(new Paragraph(run)))
-//            runs.Add(run)
-//            _table.RowGroups.Add(rowGrp)
+            _map := 
+                seq {
+                    for urlLink in urlLinks do
+                        let rowGroup = new TableRowGroup()
+                        _table.RowGroups.Add(rowGroup)
+                        let row1 = new TableRow()
+                        rowGroup.Rows.Add(row1)
+
+                        let grid = new Grid()
+                        let paragraph = new Paragraph()
+                        paragraph.Inlines.Add(grid)
+                        let tableCell1 = new TableCell(paragraph)
+                        row1.Cells.Add(tableCell1)
+
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        
+                        let stackPanel0 = new StackPanel(Orientation = Orientation.Horizontal)
+                        let hyperlink = 
+                            new Hyperlink(
+                                new Run((navigateUri urlLink).Substring("http://".Length)),
+                                NavigateUri = new Uri(navigateUri urlLink)
+                            )
+                        let label = new Label(Content = hyperlink)
+                        hyperlink.RequestNavigate |> Event.add _handler |> ignore
+                        stackPanel0.Children.Add(new CheckBox()) |> ignore
+                        stackPanel0.Children.Add(label) |> ignore
+                        Grid.SetRow(stackPanel0, 0)
+
+                        let stackPanel1 = new StackPanel(Orientation = Orientation.Horizontal)
+                        stackPanel1.Children.Add(new Label(Content = sprintf "Я:[%d]" urlLink.YandexGof)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "G:[%d]" urlLink.GoogleGof)) |> ignore                
+                        stackPanel1.Children.Add(new Label(Content = sprintf "Дата: %s" (urlLink.DatePlaced.ToShortDateString()))) |> ignore
+                        Grid.SetRow(stackPanel1, 1)
+
+                        let stackPanel2 = new StackPanel(Orientation = Orientation.Horizontal)
+                        stackPanel2.Children.Add(new Label(Content = sprintf "Текст: %s" (urlLink.Text))) |> ignore
+                        Grid.SetRow(stackPanel2, 2)
+
+                        let stackPanel3 = new StackPanel(Orientation = Orientation.Horizontal)
+                        let titleLabel = new Label(Content = "Title: ")
+                        stackPanel3.Children.Add(titleLabel) |> ignore
+                        Grid.SetRow(stackPanel3, 3)
+
+                        grid.Children.Add(stackPanel0) |> ignore
+                        grid.Children.Add(stackPanel1) |> ignore
+                        grid.Children.Add(stackPanel2) |> ignore
+                        grid.Children.Add(stackPanel3) |> ignore
+
+                        yield (navigateUri urlLink),(urlLink,titleLabel)
+                    } |> Map.ofSeq
+            ()
         )
 
+    member x.UpdateTitle (urlLink:Link, title:string) = 
+        let _, titleLabel = Map.find (navigateUri urlLink) !_map
+        x.Caller( fun() -> titleLabel.Content <- sprintf "Title: %s" title )
+        ()
+    
     member x.Metadata = _table
 
 type DataProviderForSearchedSites() = 

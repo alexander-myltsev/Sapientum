@@ -182,17 +182,31 @@ type Site(xmlRpcStruct:XmlRpcStruct) =
     static member create xmlRpcStruct = new Site(xmlRpcStruct)
 
 type Link(xmlRpcStruct:XmlRpcStruct) = 
-    let _id      = unbox<Id>     xmlRpcStruct.["id"]
-    let _text    = unbox<String> xmlRpcStruct.["txt"]
-    let _siteUrl = unbox<String> xmlRpcStruct.["site_url"]
-    let _pageUri = unbox<String> xmlRpcStruct.["page_uri"]
-    let _price   = unbox<Double> xmlRpcStruct.["price"]
+    let _id            = unbox<Id>       xmlRpcStruct.["id"]
+    let _text          = unbox<string>   xmlRpcStruct.["txt"]
+    let _siteUrl       = unbox<string>   xmlRpcStruct.["site_url"]
+    let _pageUri       = unbox<string>   xmlRpcStruct.["page_uri"]
+    let _price         = unbox<double>   xmlRpcStruct.["price"]
+    let _yandexGof     = unbox<int>      xmlRpcStruct.["nof_yandex"]
+    let _googleGof     = unbox<int>      xmlRpcStruct.["nof_google"]
+    let _pr            = unbox<int>      xmlRpcStruct.["page_pr"]
+    let _datePlaced    = unbox<DateTime> xmlRpcStruct.["date_placed"]
+    let _citationIndex = unbox<int>      xmlRpcStruct.["site_cy"]
+    let _pageLevel     = unbox<int>      xmlRpcStruct.["page_level"]
+    let _extLinks      = unbox<int>      xmlRpcStruct.["page_nof_ext_links"]
   
-    member x.Id      = _id
-    member x.Text    = _text
-    member x.SiteUrl = _siteUrl
-    member x.PageUri = _pageUri
-    member x.Price   = _price
+    member x.Id            = _id
+    member x.Text          = _text
+    member x.SiteUrl       = _siteUrl
+    member x.PageUri       = _pageUri
+    member x.Price         = _price
+    member x.YandexGof     = _yandexGof
+    member x.GoogleGof     = _googleGof
+    member x.Pr            = _pr
+    member x.DatePlaced    = _datePlaced
+    member x.CitationIndex = _citationIndex
+    member x.PageLevel     = _pageLevel
+    member x.ExtLinks     = _extLinks
   
     override x.ToString() = sprintf "%d %s %s %s %.2f" _id _siteUrl _pageUri _text _price
   

@@ -80,6 +80,10 @@
                                 </Expander>
                             </Border>
                         </HierarchicalDataTemplate>
+                        
+                        <Style TargetType="TreeViewItem">
+                            <Setter Property="IsExpanded" Value="True"></Setter>
+                        </Style>
                     </Grid.Resources>
 
                     <Grid IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToButtonIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
