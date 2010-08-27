@@ -65,7 +65,7 @@ type WpfCollectionData() =
 type LoginInfo() =
     inherit WpfData()
  
-    let _currentLogin = ref "sanyok_m" //String.Empty
+    let _currentLogin = ref String.Empty // "sanyok_m" 
     let _passwordHash = ref String.Empty
     let _status       = ref LoginStatus.LoggedOff
 
@@ -130,7 +130,7 @@ type Projects() =
         x.TriggerChangeProperties ["ProjectsCount"; "Projects"]
 
     member x.SetProjects(prjs:Project seq) = 
-        //x.Caller(_projects.Clear)
+        x.Caller(_projects.Clear)
         prjs 
         |> Seq.sortBy (fun x -> x.Name) 
         |> List.ofSeq |> List.rev |> Seq.ofList
@@ -153,11 +153,22 @@ type DataProviderForWaitingSites() =
     let _handler (e:Windows.Navigation.RequestNavigateEventArgs) = 
         Diagnostics.Process.Start(e.Uri.ToString()) |> ignore
     let _map = ref Map.empty
+
+    let _placements = new System.Collections.Generic.List<(CheckBox*Link)>()
     
     let navigateUri (urlLink:Link) = sprintf "%s%s" urlLink.SiteUrl urlLink.PageUri 
 
+    let _id = ref 0
+    member x.GetId() = !_id
+
     member x.GetRows (urlLinks:Link list) =
+        _id := !_id + 1
+        _map := Map.empty
+        _placements.Clear()
+
         x.Caller(fun () ->
+            _table.RowGroups.Clear()
+
             _map := 
                 seq {
                     for urlLink in urlLinks do
@@ -185,7 +196,8 @@ type DataProviderForWaitingSites() =
                             )
                         let label = new Label(Content = hyperlink)
                         hyperlink.RequestNavigate |> Event.add _handler |> ignore
-                        stackPanel0.Children.Add(new CheckBox()) |> ignore
+                        let checkBox = new CheckBox()
+                        stackPanel0.Children.Add(checkBox) |> ignore
                         stackPanel0.Children.Add(label) |> ignore
                         Grid.SetRow(stackPanel0, 0)
 
@@ -200,8 +212,12 @@ type DataProviderForWaitingSites() =
                         Grid.SetRow(stackPanel2, 2)
 
                         let stackPanel3 = new StackPanel(Orientation = Orientation.Horizontal)
-                        let titleLabel = new Label(Content = "Title: ")
-                        stackPanel3.Children.Add(titleLabel) |> ignore
+                        let titleBox = 
+                            new TextBlock(
+                                Text = "Title: ", 
+                                TextWrapping = Windows.TextWrapping.Wrap,
+                                Height = 60.0)
+                        stackPanel3.Children.Add(titleBox) |> ignore
                         Grid.SetRow(stackPanel3, 3)
 
                         grid.Children.Add(stackPanel0) |> ignore
@@ -209,50 +225,176 @@ type DataProviderForWaitingSites() =
                         grid.Children.Add(stackPanel2) |> ignore
                         grid.Children.Add(stackPanel3) |> ignore
 
-                        yield (navigateUri urlLink),(urlLink,titleLabel)
+                        _placements.Add((checkBox,urlLink))
+
+                        yield (navigateUri urlLink),(urlLink,titleBox)
                     } |> Map.ofSeq
             ()
         )
 
     member x.UpdateTitle (urlLink:Link, title:string) = 
-        let _, titleLabel = Map.find (navigateUri urlLink) !_map
-        x.Caller( fun() -> titleLabel.Content <- sprintf "Title: %s" title )
-        ()
+        match Map.tryFind (navigateUri urlLink) !_map with
+        | Some (_, titleLabel) -> x.Caller( fun() -> titleLabel.Text <- sprintf "Title: %s" title )
+        | None -> ()
+
+    member x.GetPlacements() = 
+        _placements 
+        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value)
+        |> Seq.map (fun (_,urlLink) -> urlLink)
+        |> List.ofSeq
     
     member x.Metadata = _table
 
 type DataProviderForSearchedSites() = 
-    let _table = new Table()
+    inherit WpfCollectionData()
 
-    member x.BuildTable() = 
-        for i in 0..10 do
-            let rowGrp = new TableRowGroup()
-            _table.RowGroups.Add(rowGrp)
-            let row = new TableRow()
-            rowGrp.Rows.Add(row)
-            row.Cells.Add(new TableCell(new Paragraph(new Run(sprintf "datarow %d" i))))
+    let _table = new Table( CellSpacing = 10.0 )
+    let _handler (e:Windows.Navigation.RequestNavigateEventArgs) = 
+        Diagnostics.Process.Start(e.Uri.ToString()) |> ignore
+    let _map = ref Map.empty
+    let _placements = new System.Collections.Generic.List<(CheckBox*Page)>()
 
-            let pg = new Paragraph()
-            let stackPanel = new StackPanel()
-            let label1 = new Label ( Content = sprintf "1-Contents-%d" i )
-            let label2 = new Label ( Content = sprintf "2-Contents-%d" i )
-            let label3 = new Label ( Content = sprintf "3-Contents-%d" i )
-            let label4 = new Label ( Content = sprintf "4-Contents-%d" i )
-            stackPanel.Children.Add(label1) |> ignore
-            stackPanel.Children.Add(label2) |> ignore
-            stackPanel.Children.Add(label3) |> ignore
-            stackPanel.Children.Add(label4) |> ignore
-
-            pg.Inlines.Add(stackPanel)
-
-            row.Cells.Add(new TableCell(pg))
-        _table
-
-    member x.AddRow (index:int) = 
-        let rowGrp = new TableRowGroup()
-        _table.RowGroups.Add(rowGrp)
-        let row = new TableRow()
-        rowGrp.Rows.Add(row)
-        row.Cells.Add(new TableCell(new Paragraph(new Run(sprintf "datarow %d" index))))
+    let _id = ref 0
+    member x.GetId() = !_id
     
-    member x.Metadata = x.BuildTable()
+    member x.GetRows (sites:Site list) =
+        _id := !_id + 1
+        _map := Map.empty
+        _placements.Clear()
+
+        x.Caller(fun () ->
+            _table.RowGroups.Clear()
+
+            _map := 
+                seq {
+                    for site in sites do
+                        let rowGroup = new TableRowGroup()
+                        _table.RowGroups.Add(rowGroup)
+                        let row1 = new TableRow()
+                        rowGroup.Rows.Add(row1)
+
+                        let grid = new Grid()
+                        let paragraph = new Paragraph()
+                        paragraph.Inlines.Add(grid)
+                        let tableCell1 = new TableCell(paragraph)
+                        row1.Cells.Add(tableCell1)
+
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        
+                        let stackPanel0 = new StackPanel(Orientation = Orientation.Horizontal)
+                        let hyperlink = 
+                            new Hyperlink(
+                                new Run(site.Url),
+                                NavigateUri = new Uri(site.Url)
+                            )
+                        let label = new Label(Content = hyperlink, Margin = new Windows.Thickness(0.0,3.0,0.0,0.0))
+                        hyperlink.RequestNavigate |> Event.add _handler |> ignore
+                        //stackPanel0.Children.Add(new CheckBox()) |> ignore
+                        stackPanel0.Children.Add(label) |> ignore
+                        Grid.SetRow(stackPanel0, 0)
+
+                        let stackPanel1 = new StackPanel(Orientation = Orientation.Horizontal)
+                        stackPanel1.Children.Add(new Label(Content = sprintf "ID: %d" site.Id)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "тИЦ: %d" site.CitationIndex)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "PR: %d" site.Pr)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "G:[%d]" site.GoogleGof)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "Я:[%d]" site.YandexGof)) |> ignore
+                        Grid.SetRow(stackPanel1, 1)
+
+                        let boolToRu f = if f then "да" else "нет"
+                        
+                        let stackPanel2 = new StackPanel(Orientation = Orientation.Horizontal)
+                        stackPanel2.Children.Add(new Label(Content = sprintf "DMOZ: %s" (boolToRu site.IsInDmoz))) |> ignore
+                        stackPanel2.Children.Add(new Label(Content = sprintf "YACA: %s" (boolToRu site.IsInYaca))) |> ignore
+                        stackPanel2.Children.Add(new Label(Content = sprintf "Блок в Я: %s" (boolToRu site.IsBlockedInYandex))) |> ignore
+                        stackPanel2.Children.Add(new Label(Content = sprintf "Домен ур.: %d" site.DomainLevel)) |> ignore
+                        Grid.SetRow(stackPanel2, 2)
+
+                        //let links = new StackPanel(Margin = new Windows.Thickness(5.0,5.0,0.0,0.0), CanVerticallyScroll = true, Height = 150.0)
+                        let links = new ListBox(Margin = new Windows.Thickness(5.0,5.0,0.0,0.0))
+                        Grid.SetRow(links, 3)
+
+                        grid.Children.Add(stackPanel0) |> ignore
+                        grid.Children.Add(stackPanel1) |> ignore
+                        grid.Children.Add(stackPanel2) |> ignore
+                        grid.Children.Add(links) |> ignore
+
+                        yield site.Url,(site, links)
+                    } |> Map.ofSeq
+            ()
+        )
+
+    member x.UpdateSitePage (site:Site, page:Page, title:string) = 
+        x.Caller(fun () ->
+            match Map.tryFind site.Url !_map with
+            | Some (_,links) ->
+                let stackPanel = new StackPanel()
+            
+                let hyperlink = 
+                    new Hyperlink(
+                        new Run(page.Uri),
+                        NavigateUri = new Uri(sprintf "%s%s" site.Url page.Uri)
+                    )
+                hyperlink.RequestNavigate |> Event.add _handler |> ignore
+                let label = new Label(Content = hyperlink)
+                let stackPanel1 = new StackPanel(Orientation = Orientation.Horizontal)
+                let checkBox = new CheckBox()
+                stackPanel1.Children.Add(checkBox) |> ignore
+                stackPanel1.Children.Add(label) |> ignore
+
+                let stackPanel2 = new StackPanel(Orientation = Orientation.Horizontal)
+                stackPanel2.Children.Add(new Label(Content = sprintf "ВС: %d" page.ExtLinks)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "УВ: %d" page.Level)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "PR: %d" page.Pr)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "Мест: %d" page.FreePlaces)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "Цена: %.2f" page.Price)) |> ignore
+
+                stackPanel.Children.Add(stackPanel1) |> ignore
+                stackPanel.Children.Add(stackPanel2) |> ignore
+                stackPanel.Children.Add(new Label(Content = sprintf "Title: %s" title)) |> ignore
+
+                _placements.Add((checkBox,page))
+
+                links.Items.Add(stackPanel) |> ignore
+            | None -> ()
+        )
+
+    member x.GetPlacements() =
+        _placements 
+        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value)
+        |> Seq.map (fun (checkBox,page) -> (checkBox.IsEnabled <- false; page))
+        |> List.ofSeq
+    
+    member x.Metadata = _table
+
+type EventType = 
+    | Login of LoginInfo
+    | WaitingSitesRefresh of Id
+    | SearchSites of CustomFilter
+    | DownloadFoundOpenedSites of (Id*CustomFilter*Site list)
+    | PlaceFoundClosedSites of (Id*CustomFilter*Site list)
+    | PlaceOpenedPages of (Id)
+    | PlaceWaitingPages of (Id)
+
+type UIEvent = delegate of Object*EventType->unit
+
+type UIState() = 
+    inherit WpfData()
+
+    let _openedSites : Site list ref = ref List.empty
+    let _closedSites : Site list ref = ref List.empty
+
+    member x.OpenedSites 
+        with get() = !_openedSites
+        and set v = 
+            _openedSites := v
+            x.TriggerChangeProperties ["OpenedSites"]
+
+    member x.ClosedSites
+        with get() = !_closedSites
+        and set v = 
+            _closedSites := v
+            x.TriggerChangeProperties ["ClosedSites"]

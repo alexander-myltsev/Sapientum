@@ -171,12 +171,30 @@ type SiteForUrl(xmlRpcStruct:XmlRpcStruct) =
     static member create xmlRpcStruct = new SiteForUrl(xmlRpcStruct)
 
 type Site(xmlRpcStruct:XmlRpcStruct) = 
-    let _id  = unbox<Id>     xmlRpcStruct.["id"]
-    let _url = unbox<String> xmlRpcStruct.["url"]
-  
-    member x.Id  = _id
-    member x.Url = _url
-  
+    let _id                = unbox<Id>     xmlRpcStruct.["id"]
+    let _url               = unbox<string> xmlRpcStruct.["url"]
+    let _googleGof         = unbox<int>    xmlRpcStruct.["nof_pages_in_google"]
+    let _yandexGof         = unbox<int>    xmlRpcStruct.["nof_pages_in_yandex"]
+    let _isBlockedInYandex = unbox<bool>   xmlRpcStruct.["blocked_in_yandex"]
+    let _citationIndex     = unbox<int>    xmlRpcStruct.["cy"]
+    let _isInDmoz          = unbox<bool>   xmlRpcStruct.["in_dmoz"]
+    let _domainLevel       = unbox<int>    xmlRpcStruct.["domain_level"]
+    let _categoryId        = unbox<int>    xmlRpcStruct.["category_id"]
+    let _isInYaca          = unbox<bool>   xmlRpcStruct.["in_yaca"]
+    let _pr                = unbox<int>    xmlRpcStruct.["pr"]
+
+    member x.Id                 = _id
+    member x.Url                = _url
+    member x.GoogleGof          = _googleGof
+    member x.YandexGof          = _yandexGof
+    member x.IsBlockedInYandex  = _isBlockedInYandex
+    member x.CitationIndex      = _citationIndex
+    member x.IsInDmoz           = _isInDmoz
+    member x.DomainLevel        = _domainLevel
+    member x.CategoryId         = _categoryId
+    member x.IsInYaca           = _isInYaca
+    member x.Pr                 = _pr
+
     override x.ToString() = sprintf "%s" _url
   
     static member create xmlRpcStruct = new Site(xmlRpcStruct)
@@ -213,17 +231,21 @@ type Link(xmlRpcStruct:XmlRpcStruct) =
     static member create xmlRpcStruct = new Link(xmlRpcStruct)
 
 type Page(xmlRpcStruct:XmlRpcStruct) = 
-    let _id = unbox<Id> xmlRpcStruct.["id"]
-    let _pr = unbox<Int32> xmlRpcStruct.["pr"]
-    let _extLinks = unbox<Int32> xmlRpcStruct.["ext_links"]
-    let _uri = unbox<String> xmlRpcStruct.["uri"]
-    let _freePlaces = unbox<Int32> xmlRpcStruct.["free_places"]
-    let _price = unbox<Double> xmlRpcStruct.["price"]
-    let _level = unbox<Int32> xmlRpcStruct.["level"]
+    let _id         = unbox<Id>     xmlRpcStruct.["id"]
+    let _pr         = unbox<int>    xmlRpcStruct.["pr"]
+    let _extLinks   = unbox<int>    xmlRpcStruct.["ext_links"]
+    let _uri        = unbox<string> xmlRpcStruct.["uri"]
+    let _freePlaces = unbox<int>    xmlRpcStruct.["free_places"]
+    let _price      = unbox<double> xmlRpcStruct.["price"]
+    let _level      = unbox<int>    xmlRpcStruct.["level"]
   
-    member x.Id    = _id
-    member x.Uri   = _uri
-    member x.Price = _price
+    member x.Id         = _id
+    member x.Pr         = _pr
+    member x.ExtLinks   = _extLinks
+    member x.Uri        = _uri
+    member x.FreePlaces = _freePlaces
+    member x.Price      = _price
+    member x.Level      = _level
   
     override x.ToString() = sprintf "%s %d %.2f" _uri _level _price
   
@@ -263,7 +285,7 @@ type DomainLevel =
     | Level3
 
 type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*int option, currentCitationIndexRange:int option*int option, 
-                  externalLinksCount:int option, priceRange:float option*float option, domainDaysAge:int option, 
+                  externalLinksCount:int option, externalLinksForecastCount:int option, priceRange:float option*float option, domainDaysAge:int option, 
                   isDmoz:TripleAnswer, isYaca:TripleAnswer, domainLevel:DomainLevel, nestedLevel:int*int,
                   siteCategories:Categories, yacaCategories:Categories, regions:Categories, domainZones:Categories,
                   words:string, dateAdded:DateAdded, showWithPlacedLinks:bool,
@@ -274,11 +296,90 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
     member x.ToXmlRpcStruct() = 
         let xmlRpcStruct = new XmlRpcStruct()
         xmlRpcStruct.Add("words", words)
+        
+        match currentCitationIndexRange with
+        | Some cciFrom, Some cciTo -> ( xmlRpcStruct.Add("cy_from", cciFrom); xmlRpcStruct.Add("cy_2", cciTo) )
+        | Some cciFrom, None -> xmlRpcStruct.Add("cy_from", cciFrom)
+        | None, Some cciTo -> xmlRpcStruct.Add("cy_2", cciTo)
+        | None, None -> ()
+
+        match externalLinksForecastCount with
+        | Some elc -> xmlRpcStruct.Add("ext_links_forecast", elc)
+        | None -> ()
+
+        match nestedLevel with
+        | lvlFrom, lvlTo -> (xmlRpcStruct.Add("level_from", lvlFrom); xmlRpcStruct.Add("level_2", lvlTo))
+
+        match domainLevel with
+        | AllLevels -> xmlRpcStruct.Add("domain_level", 0)
+        | Level2 -> xmlRpcStruct.Add("domain_level", 2)
+        | Level3 -> xmlRpcStruct.Add("domain_level", 3)
+
+        //match domainZones with
+
+        //showWithPlacedLinks
+
+        xmlRpcStruct.Add("flag_blocked_in_google", (int)isInGoogle)
+
+        xmlRpcStruct.Add("flag_blocked_in_yandex", (int)isInYandex)
+
+        match domainDaysAge with
+        | Some days -> xmlRpcStruct.Add("days_old_whois", days)
+        | None -> ()
+
+        match priceRange with
+        | Some priceFrom, Some priceTo -> ( xmlRpcStruct.Add("price_from", priceFrom); xmlRpcStruct.Add("price_2", priceTo) )
+        | Some priceFrom, None -> xmlRpcStruct.Add("price_from", priceFrom)
+        | None, Some priceTo -> xmlRpcStruct.Add("price_2", priceTo)
+        | None, None -> ()
+
+        match externalLinksCount with
+        | Some count -> xmlRpcStruct.Add("ext_links", count)
+        | None -> ()
+
+        xmlRpcStruct.Add("in_yaca", (int)isYaca)
+
+        xmlRpcStruct.Add("in_dmoz", (int)isDmoz)
+
+        match prRange with
+        | Some prFrom, Some prTo -> ( xmlRpcStruct.Add("pr_from", prFrom); xmlRpcStruct.Add("pr_2", prTo) )
+        | Some prFrom, None -> xmlRpcStruct.Add("pr_from", prFrom)
+        | None, Some prTo -> xmlRpcStruct.Add("pr_2", prTo)
+        | None, None -> ()
+
+        xmlRpcStruct.Add("nogood", (int)searchArea)
+
+//        let xmlRpcStruct1 = new XmlRpcStruct()
+//        let processXmlRpcStruct key = 
+//            if xmlRpcStruct.ContainsKey(key) then xmlRpcStruct1.Add(key, xmlRpcStruct.[key])
+//        processXmlRpcStruct "cy_2"
+//        processXmlRpcStruct "words"
+//        processXmlRpcStruct "ext_links_forecast"
+//        processXmlRpcStruct "level_from"
+//        processXmlRpcStruct "domain_level"
+//        processXmlRpcStruct "domain_zones"
+//        processXmlRpcStruct "no_double_in_project"
+//        processXmlRpcStruct "flag_blocked_in_google"
+//        processXmlRpcStruct "level_2"
+//        processXmlRpcStruct "days_old_whois"
+//        processXmlRpcStruct "price_2"
+//        processXmlRpcStruct "ext_links"
+//        processXmlRpcStruct "in_yaca"
+//        processXmlRpcStruct "in_dmoz"
+//        processXmlRpcStruct "pr_2"
+//        processXmlRpcStruct "cy_from"
+//        processXmlRpcStruct "nogood"
+//        processXmlRpcStruct "flag_blocked_in_yandex"
+//        processXmlRpcStruct "pr_from"
+//        processXmlRpcStruct "price_from"
+//
+//        xmlRpcStruct1
+    
         xmlRpcStruct
 
     static member Create(projectUrlId:int, searchAreaPrimaryBase:bool, searchAreaDubiousContent:bool, searchAreaAllSites:bool,
                          prFrom:string, prTo:string, currentCitationIndexFrom:string, currentCitationIndexTo:string,
-                         externalLinksCount:string, priceFrom:string, priceTo:string, domainDaysAge:string,
+                         externalLinksCount:string, externalLinksForecastCount:string, priceFrom:string, priceTo:string, domainDaysAge:string,
                          isDmoz:int, isYaca:int, 
                          domainLevelAllLevels:bool, domainLevelIs2nd:bool, domainLevelIs3rd:bool,
                          nestedLevelMain:bool, nestedLevel2nd:bool, nestedLevel3rd:bool,
@@ -298,6 +399,7 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
         let prRange = (Helper.Parse<int>(prFrom), Helper.Parse<int>(prTo))
         let currentCitationIndexRange = (Helper.Parse<int>(currentCitationIndexFrom), Helper.Parse<int>(currentCitationIndexTo))
         let externalLinksCount = Helper.Parse<int>(externalLinksCount)
+        let externalLinksForecastCount = Helper.Parse<int>(externalLinksForecastCount)
         let priceRange = (Helper.Parse<float>(priceFrom), Helper.Parse<float>(priceTo))
         let domainDaysAge = Helper.Parse<int>(domainDaysAge)
         let isDmoz = enum<TripleAnswer> isDmoz
@@ -347,7 +449,7 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
             | false, true, false -> PagesFromSite.Optimal
             | false, false, true -> PagesFromSite.All
             | _ -> failwith "Filter.Create/pagesFromSite"
-        let filter = new CustomFilter(projectUrlId, searchArea, prRange, currentCitationIndexRange, externalLinksCount, priceRange, domainDaysAge, 
+        let filter = new CustomFilter(projectUrlId, searchArea, prRange, currentCitationIndexRange, externalLinksCount, externalLinksForecastCount, priceRange, domainDaysAge, 
                                       isDmoz, isYaca, domainLevel, netstedLevel, siteCategories, yacaCategories, regions, domainZones, 
                                       words, dateAdded, showWithPlacedLinks, isInYandex, isInGoogle, pagesFromSite)
         filter

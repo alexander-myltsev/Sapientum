@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Data;
+using Microsoft.FSharp.Collections;
+using Sapientum.Types.Sape;
 using Sapientum.Types.Wpf;
+using Project = Sapientum.Types.Wpf.Project;
 
 namespace WpfControlLib
 {
@@ -13,9 +16,9 @@ namespace WpfControlLib
         {
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
-//#if DEBUG
-//                return true;
-//#else
+                //#if DEBUG
+                //                return true;
+                //#else
                 var loginStatus = (LoginStatus)value;
                 bool result;
                 switch (loginStatus)
@@ -32,7 +35,7 @@ namespace WpfControlLib
                         throw new ArgumentOutOfRangeException();
                 }
                 return result;
-//#endif
+                //#endif
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -109,6 +112,36 @@ namespace WpfControlLib
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 return value;
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotSupportedException("Cannot convert back");
+            }
+        }
+
+        [ValueConversion(typeof(List<Site>), typeof(List<string>))]
+        public class DownloadSearchedSitesButtonContentConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                var val = (FSharpList<Site>)value;
+                return "Скачать " + val.Length + " открытых сайтов";
+            }
+
+            public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                throw new NotSupportedException("Cannot convert back");
+            }
+        }
+
+        [ValueConversion(typeof(List<Site>), typeof(List<string>))]
+        public class BuyWaitingSitesButtonContentConverter : IValueConverter
+        {
+            public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+            {
+                var val = (FSharpList<Site>)value;
+                return "Разместить " + val.Length + " закрытых сайтов";
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

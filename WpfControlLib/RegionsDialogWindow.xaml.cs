@@ -83,10 +83,11 @@ namespace WpfControlLib
 
         public string[] GetSelected()
         {
-            return _checkBoxes
+            var selected = _checkBoxes
                 .Where(box => (bool)box.IsChecked)
                 .Select(box => (string)box.Content)
                 .ToArray();
+            return selected;
         }
     }
 }

@@ -87,7 +87,7 @@ let getTitle (headers:WebHeaderCollection) (responseStream:Stream) =
                 let bytesRead = memoryStream.Read(buffer, 0, buffer.Length)
                 Encoding.GetEncoding(1251).GetString(buffer, 0, bytesRead)
         match html with
-        | ParseRegex @"<title>(.*?)</title>" [title] -> return title
+        | ParseRegex @"<title>(.*?)</title>" [title] -> return title.Substring(0, min 75 title.Length).Replace('\n',' ').Replace('\r',' ')
         | _ -> return "не найден на странице"
     }
 
@@ -96,7 +96,9 @@ let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) (dataProviderForWait
         let urlLinks = sapeApi.GetUrlLinks prjUrlId UrlLinkStatus.WaitSEO
         Debug.WriteLine(sprintf "urlLinks.Length: %d" urlLinks.Length)
         dataProviderForWaitingSites.GetRows urlLinks
+        let id = dataProviderForWaitingSites.GetId()
         let getTitleAsync (urlLink:Link) = async {
+            if id = dataProviderForWaitingSites.GetId() then
                 let urlStr = sprintf "%s%s" urlLink.SiteUrl urlLink.PageUri
                 let req = HttpWebRequest.Create(urlStr, Timeout = 5000)
                 try 
@@ -118,29 +120,83 @@ let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) (dataProviderForWait
                 |> Async.Parallel 
                 |> Async.Ignore |> Async.Start
                 //|> Async.RunSynchronously
-
-
-//        urlLinks |> List.iter (fun urlLink ->
-//            let urlStr = sprintf "%s%s" urlLink.SiteUrl urlLink.PageUri
-//            let req = HttpWebRequest.Create(urlStr, Timeout = 10000)
-//            try 
-//                let resp = req.GetResponse()
-//                Debug.WriteLine(sprintf "req.GetResponse(): %s" urlLink.SiteUrl)
-//                let respStream = resp.GetResponseStream()
-//                //use reader = new StreamReader(stream)
-//                //let! streamString = reader.AsyncReadToEnd()
-//                //Debug.WriteLine(sprintf "streamString.Substring(0,10): %s" (streamString.Substring(0,10)))
-//                let title = getTitle resp.Headers respStream
-//                //addDataPiece title
-//                dataProviderForWaitingSites.UpdateTitle (urlLink, title)
-//            with
-//            | _ -> 
-//                Debug.WriteLine(sprintf "req.GetResponse(): (exc) %s" urlLink.SiteUrl)
-//                dataProviderForWaitingSites.UpdateTitle (urlLink, "Не получен")
-//
-//            req.Abort()
-//        )
         ()
+    } |> Async.Start
+
+let ProcessSitesSearch (sapeApi:SapeApi) (customFilter:CustomFilter) (uiState:UIState) =
+    async {
+        let filters = sapeApi.GetFilters()
+        let sites = sapeApi.SearchSites customFilter.ProjectUrlId (customFilter.ToXmlRpcStruct())
+        MessageBox.Show(sprintf "Найдено %d сайтов" sites.Length) |> ignore
+        let closedSites = sites |> List.filter (fun site -> site.Url |> String.IsNullOrEmpty)
+        let openedSites = sites |> List.filter (fun site -> site.Url |> String.IsNullOrEmpty |> not)
+        uiState.OpenedSites <- openedSites
+        uiState.ClosedSites <- closedSites
+    } |> Async.Start
+
+let ProcessOpenedSitesDownloading (sapeApi:SapeApi) (projectUrlId:Id) (customFilter:CustomFilter) (openedSites:Site list) (dataProviderForSearchedSites:DataProviderForSearchedSites) = 
+    async {
+        dataProviderForSearchedSites.GetRows openedSites
+        let id = dataProviderForSearchedSites.GetId()
+        openedSites |> List.iter (fun site ->
+            if id = dataProviderForSearchedSites.GetId() then
+                let pages = sapeApi.SearchPages projectUrlId site.Id (customFilter.ToXmlRpcStruct()) 
+                let getTitleAsync (page:Page) = async {
+                    if id = dataProviderForSearchedSites.GetId() then
+                        let urlStr = sprintf "%s%s" site.Url page.Uri
+                        let req = HttpWebRequest.Create(urlStr, Timeout = 5000)
+                        try 
+                            let! resp = req.AsyncGetResponse()
+                            //Debug.WriteLine(sprintf "req.AsyncGetResponse(): %s" urlLink.SiteUrl)
+                            let respStream = resp.GetResponseStream()
+                            //Debug.WriteLine(sprintf "streamString.Substring(0,10): %s" (streamString.Substring(0,10)))
+                            let! title = getTitle resp.Headers respStream
+                            dataProviderForSearchedSites.UpdateSitePage (site, page, title)
+                        with
+                        | _ -> 
+                            //Debug.WriteLine(sprintf "req.AsyncGetResponse(): (exc) %s" page.Uri)
+                            dataProviderForSearchedSites.UpdateSitePage (site, page, "Не получен")
+                        req.Abort()
+                }
+                pages 
+                    |> List.map getTitleAsync 
+                    |> Async.Parallel 
+                    |> Async.Ignore |> Async.Start
+                ()
+        )
+        Debug.WriteLine(sprintf "filters.Length: %d" openedSites.Length)
+    } |> Async.Start
+
+let ProcessClosedSitesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (customFilter:CustomFilter) (closedSites:Site list) = 
+    async {
+        closedSites |> List.iter (fun site ->
+            let pages = sapeApi.SearchPages projectUrlId site.Id (customFilter.ToXmlRpcStruct()) 
+            try
+                pages |> Seq.take 50 |> List.ofSeq |> List.iter (fun page ->
+                    let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
+                    ()
+                )
+            with 
+            | :? CookComputing.XmlRpc.XmlRpcFaultException as ex -> 
+                MessageBox.Show(sprintf "Ошибка при размещении ссылок для сайта %d. Причина: %s" site.Id ex.Message) |> ignore
+        )
+        MessageBox.Show(sprintf "Размещение ссылок закончено") |> ignore
+    } |> Async.Start
+
+let ProcessOpenedPagesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (placements:Page list) =
+    async {
+        placements |> Seq.iter (fun page ->
+            let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
+            ()
+        )
+    } |> Async.Start
+
+let ProcessWaitingPagesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (placements:Link list) =
+    async {
+        placements |> Seq.iter (fun link ->
+            let res = sapeApi.PlacementAccept link.Id
+            ()
+        )
     } |> Async.Start
 
 [<STAThread>]
@@ -149,37 +205,37 @@ do
     let app = new Windows.Application()
     let win = new MainWindow()
     let loginInfoWpfData = win.GetLoginInfo()
+    let uiState = win.GetUiState()
     let projectsWpfData = win.GetProjects()
     let dataProviderForSearchedSites = win.GetDataProviderForSearchedSites()
     let dataProviderForWaitingSites  = win.GetDataProviderForWaitingSites()
-#if DEBUG
-    ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData
-#endif
-    win.ButtonLoginClick 
-    |> Event.add (fun x -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
+
+//#if DEBUG
+//    ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData
+//#endif
+
+//    win.ButtonLoginClick 
+//    |> Event.add (fun x -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)
 //    win.ProjectUrlSelected
 //    |> Event.add (fun prjUrlId -> ProcessProjectSelection sapeApi prjUrlId)
-    win.WaitingSitesRefreshClick
-    |> Event.add (fun prjUrlId ->
-            ProcessProjectSelection sapeApi prjUrlId dataProviderForWaitingSites
-        )
-    win.SearchSitesRequested
-    |> Event.add (fun customFilter -> 
-            let filters = sapeApi.GetFilters()
-            let sites = sapeApi.SearchSites customFilter.ProjectUrlId (customFilter.ToXmlRpcStruct())
-            dataProviderForSearchedSites.AddRow 3
-            Debug.WriteLine(sprintf "filters.Length: %d" filters.Length)
-        )
-
-//        System.Threading.ThreadPool.QueueUserWorkItem(
-//            fun state -> 
-//                let rec loop() =
-//                    let loginInfo = win.GetLoginInfo()
-//                    loginInfo.Login <- System.DateTime.Now.ToString()
-//                    //System.Diagnostics.Debug.WriteLine(sprintf "loginInfo:%s" loginInfo.Login)
-//                    System.Threading.Thread.Sleep 1000
-//                    loop()
-//                loop()
-//        ) |> ignore
+//    win.WaitingSitesRefreshClick
+//    |> Event.add (fun prjUrlId ->
+//            ProcessProjectSelection sapeApi prjUrlId dataProviderForWaitingSites
+//        )
+//    win.SearchSitesRequested
+//    |> Event.add (fun customFilter -> 
+//            ProcessSitesSearch sapeApi customFilter dataProviderForSearchedSites
+//        )
+    win.UIEventOccurred
+    |> Event.add(fun eventType ->
+        match eventType with
+        | Login loginInfo -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData
+        | WaitingSitesRefresh selectedProjectId -> ProcessProjectSelection sapeApi selectedProjectId dataProviderForWaitingSites
+        | SearchSites customFilter -> ProcessSitesSearch sapeApi customFilter uiState
+        | DownloadFoundOpenedSites (projectUrlId, customFilter, openedSites) -> ProcessOpenedSitesDownloading sapeApi projectUrlId customFilter openedSites dataProviderForSearchedSites
+        | PlaceFoundClosedSites (projectUrlId, customFilter, closedSites) -> ProcessClosedSitesPlacement sapeApi projectUrlId customFilter closedSites
+        | PlaceOpenedPages projectUrlId -> ProcessOpenedPagesPlacement sapeApi projectUrlId (dataProviderForSearchedSites.GetPlacements())
+        | PlaceWaitingPages projectUrlId -> ProcessWaitingPagesPlacement sapeApi projectUrlId (dataProviderForWaitingSites.GetPlacements())
+    )
 
     app.Run(win) |> ignore

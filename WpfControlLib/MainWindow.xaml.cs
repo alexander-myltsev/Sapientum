@@ -42,7 +42,15 @@ namespace WpfControlLib
         {
             InitializeComponent();
 
-            buttonLogin.Click += (sender, args) => ButtonLoginClick(sender, new LoginInfo { CurrentLogin = textBoxLogin.Text, PasswordHash = CalculateMd5Hash(passwordBox.Password) });
+            //buttonLogin.Click += (sender, args) => ButtonLoginClick(sender, new LoginInfo { CurrentLogin = textBoxLogin.Text, PasswordHash = CalculateMd5Hash(passwordBox.Password) });
+            buttonLogin.Click +=
+                (sender, args) =>
+                UIEventOccurred(this,
+                                EventType.NewLogin(new LoginInfo
+                                                       {
+                                                           CurrentLogin = textBoxLogin.Text,
+                                                           PasswordHash = CalculateMd5Hash(passwordBox.Password)
+                                                       }));
 
             //var sapeApi = new XmlRpc.SapeApi();
             //sapeApi.Login("sanyok_m", CalculateMd5Hash("abc123"), true);
@@ -64,21 +72,23 @@ namespace WpfControlLib
             //projectsTreeView.DataContext = projects;
         }
 
-        public delegate void ProjectUrlSelectedHandler(object sender, int projectUrlId);
+        //public delegate void ProjectUrlSelectedHandler(object sender, int projectUrlId);
 
-        public delegate void SearchSitesRequestHandler(object sender, CustomFilter filter);
+        //public delegate void SearchSitesRequestHandler(object sender, CustomFilter filter);
 
-        public delegate void LoginAttemptHandler(object sender, LoginInfo loginInfo);
+        //public delegate void LoginAttemptHandler(object sender, LoginInfo loginInfo);
 
-        public delegate void WaitingSitesRefreshHandler(object sender, int projectUrlId);
+        //public delegate void WaitingSitesRefreshHandler(object sender, int projectUrlId);
 
-        public event LoginAttemptHandler ButtonLoginClick;
+        //public event LoginAttemptHandler ButtonLoginClick;
 
-        public event ProjectUrlSelectedHandler ProjectUrlSelected;
+        //public event ProjectUrlSelectedHandler ProjectUrlSelected;
 
-        public event SearchSitesRequestHandler SearchSitesRequested;
+        //public event SearchSitesRequestHandler SearchSitesRequested;
 
-        public event WaitingSitesRefreshHandler WaitingSitesRefreshClick;
+        //public event WaitingSitesRefreshHandler WaitingSitesRefreshClick;
+
+        public event UIEvent UIEventOccurred;
 
         //private void HyperlinkRequestNavigate(object sender, RequestNavigateEventArgs e)
         //{
@@ -95,6 +105,12 @@ namespace WpfControlLib
         {
             var projects = (Projects)mainGrid.Resources["projects"];
             return projects;
+        }
+
+        public UIState GetUiState()
+        {
+            var uiState = (UIState)mainGrid.Resources["uiState"];
+            return uiState;
         }
 
         public DataProviderForSearchedSites GetDataProviderForSearchedSites()
@@ -133,8 +149,8 @@ namespace WpfControlLib
             var radioButton = (RadioButton)sender;
             Debug.WriteLine(string.Format("radioButton selected. radioButton.Tag: {0}", radioButton.Tag));
             _projectUrlIdSelected = (int)radioButton.Tag;
-            if (ProjectUrlSelected != null)
-                ProjectUrlSelected(this, _projectUrlIdSelected);
+            //if (ProjectUrlSelected != null)
+            //    ProjectUrlSelected(this, _projectUrlIdSelected);
         }
 
         private void SiteCategoriesChooseRadioButtonClick(object sender, RoutedEventArgs e)
@@ -168,6 +184,7 @@ namespace WpfControlLib
                 _yacaCategoriesDialogWindow.Owner = _regionsDialogWindow.Owner = this;
         }
 
+        private CustomFilter _customFilter;
         private void SearchSitesButtonClick(object sender, RoutedEventArgs e)
         {
             #region Garbage
@@ -219,42 +236,68 @@ namespace WpfControlLib
             //var priceTuple = new Tuple<FSharpOption<double>, FSharpOption<double>>(priceFromOption, priceToOption);
             #endregion // Garbage
 
-            var customFilter = CustomFilter.Create(_projectUrlIdSelected,
-                                                   (bool)radioButtonPrimaryBase.IsChecked,
-                                                   (bool)radioButtonDubiousContent.IsChecked,
-                                                   (bool)radioButtonAllSites.IsChecked,
-                                                   textBoxPrFrom.Text, textBoxPrTo.Text, textBoxCitationIndexFrom.Text,
-                                                   textBoxCitationIndexTo.Text,
-                                                   textBoxExternalLinksCount.Text, textBoxPriceFrom.Text,
-                                                   textBoxPriceTo.Text,
-                                                   textBoxDomainDaysAge.Text, comboBoxIsDmoz.SelectedIndex,
-                                                   comboBoxIsYaca.SelectedIndex,
-                                                   (bool)radionButtonAllLevels.IsChecked,
-                                                   (bool)radionButtonSecondLevel.IsChecked,
-                                                   (bool)radionButtonThirdLevel.IsChecked,
-                                                   (bool)checkBoxNestedLevelMain.IsChecked,
-                                                   (bool)checkBoxNestedLevel2nd.IsChecked,
-                                                   (bool)checkBoxNestedLevel3rd.IsChecked,
-                                                   (bool)radioButtonSiteCategoriesIsAll.IsChecked,
-                                                   _siteCategoriesDialogWindow.GetSelected(),
-                                                   (bool)radioButtonYacaCategoriesIsAll.IsChecked,
-                                                   _yacaCategoriesDialogWindow.GetSelected(),
-                                                   (bool)radioButtonRegionsIsAll.IsChecked,
-                                                   _regionsDialogWindow.GetSelected(),
-                                                   (bool)radioButtonDomainZonesIsAll.IsChecked,
-                                                   _domainZonesDialogWindow.GetSelected(),
-                                                   textBoxWords.Text, comboBoxDateAdded.SelectedIndex,
-                                                   (bool)checkBoxShowWithPlacedLinks.IsChecked,
-                                                   comboBoxIsInYandex.SelectedIndex, comboBoxIsInGoogle.SelectedIndex,
-                                                   (bool)radioButtonPagesFromSiteSingle.IsChecked,
-                                                   (bool)radioButtonPagesFromSiteOptimal.IsChecked,
-                                                   (bool)radioButtonPagesFromSiteAll.IsChecked);
-            SearchSitesRequested(this, customFilter);
+            _customFilter = CustomFilter.Create(_projectUrlIdSelected,
+                                                               (bool)radioButtonPrimaryBase.IsChecked,
+                                                               (bool)radioButtonDubiousContent.IsChecked,
+                                                               (bool)radioButtonAllSites.IsChecked,
+                                                               textBoxPrFrom.Text, textBoxPrTo.Text, textBoxCitationIndexFrom.Text,
+                                                               textBoxCitationIndexTo.Text,
+                                                               textBoxExternalLinksCount.Text, 
+                                                               textBoxExternalLinksForecastCount.Text,
+                                                               textBoxPriceFrom.Text,
+                                                               textBoxPriceTo.Text,
+                                                               textBoxDomainDaysAge.Text, comboBoxIsDmoz.SelectedIndex,
+                                                               comboBoxIsYaca.SelectedIndex,
+                                                               (bool)radionButtonAllLevels.IsChecked,
+                                                               (bool)radionButtonSecondLevel.IsChecked,
+                                                               (bool)radionButtonThirdLevel.IsChecked,
+                                                               (bool)checkBoxNestedLevelMain.IsChecked,
+                                                               (bool)checkBoxNestedLevel2nd.IsChecked,
+                                                               (bool)checkBoxNestedLevel3rd.IsChecked,
+                                                               (bool)radioButtonSiteCategoriesIsAll.IsChecked,
+                                                               _siteCategoriesDialogWindow.GetSelected(),
+                                                               (bool)radioButtonYacaCategoriesIsAll.IsChecked,
+                                                               _yacaCategoriesDialogWindow.GetSelected(),
+                                                               (bool)radioButtonRegionsIsAll.IsChecked,
+                                                               _regionsDialogWindow.GetSelected(),
+                                                               (bool)radioButtonDomainZonesIsAll.IsChecked,
+                                                               _domainZonesDialogWindow.GetSelected(),
+                                                               textBoxWords.Text, comboBoxDateAdded.SelectedIndex,
+                                                               (bool)checkBoxShowWithPlacedLinks.IsChecked,
+                                                               comboBoxIsInYandex.SelectedIndex, comboBoxIsInGoogle.SelectedIndex,
+                                                               (bool)radioButtonPagesFromSiteSingle.IsChecked,
+                                                               (bool)radioButtonPagesFromSiteOptimal.IsChecked,
+                                                               (bool)radioButtonPagesFromSiteAll.IsChecked);
+            //SearchSitesRequested(this, customFilter);
+            UIEventOccurred(this, EventType.NewSearchSites(_customFilter));
         }
 
         private void WaitingSitesButtonOnClick(object sender, RoutedEventArgs e)
         {
-            WaitingSitesRefreshClick(this, _projectUrlIdSelected);
+            //WaitingSitesRefreshClick(this, _projectUrlIdSelected);
+            UIEventOccurred(this, EventType.NewWaitingSitesRefresh(_projectUrlIdSelected));
+        }
+
+        private void DownloadOpenedSites(object sender, RoutedEventArgs e)
+        {
+            UIEventOccurred(this, EventType.NewDownloadFoundOpenedSites(new Tuple<int, CustomFilter, FSharpList<Site>>(_projectUrlIdSelected, _customFilter, GetUiState().OpenedSites)));
+            GetUiState().OpenedSites = FSharpList<Site>.Empty;
+        }
+
+        private void PlaceClosedSites(object sender, RoutedEventArgs e)
+        {
+            UIEventOccurred(this, EventType.NewPlaceFoundClosedSites(new Tuple<int, CustomFilter, FSharpList<Site>>(_projectUrlIdSelected, _customFilter, GetUiState().ClosedSites)));
+            GetUiState().ClosedSites = FSharpList<Site>.Empty;
+        }
+
+        private void BuyWaitingSitesButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            UIEventOccurred(this, EventType.NewPlaceWaitingPages(_projectUrlIdSelected));
+        }
+
+        private void BuySearchedSitesButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            UIEventOccurred(this, EventType.NewPlaceOpenedPages(_projectUrlIdSelected));
         }
     }
 }

@@ -75,9 +75,13 @@ type ISapeApi =
     abstract GetFilters : bool -> XmlRpcStruct array
   
     /// (array) sape.get_project_links((int)  project_id [, (char) status, (timestamp) date_start, (timestamp) date_stop, (int) pn = 0])
-    /// - список ссылок проекта, каждый элемент содержит
     [<XmlRpcMethod("sape.get_project_links")>]
     abstract GetProjectLinks : Id -> XmlRpcStruct array
+
+    /// (bool) sape.placement_accept_seo((int) id) — 
+    /// одобрение ссылки оптимизатором. Необходимо одобрять ссылки в статусе WAIT_SEO
+    [<XmlRpcMethod("sape.placement_accept_seo")>]
+    abstract PlacementAccept : Id -> bool
 
 type UrlLinkStatus = 
     | WaitWM
@@ -104,8 +108,6 @@ type SapeApi() =
         with
         | :? XmlRpcFaultException as ex when ex.FaultCode = 666 -> None
 
-
-
     member x.GetUserInfo() = sapeProxy.GetUserInfo() |> UserInfo.create
 
     member x.GetProjects() = sapeProxy.GetProjects false |> Array.map Project.create |> List.ofArray
@@ -117,7 +119,7 @@ type SapeApi() =
     //member x.SearchSites urlId filter pageNumber positionsCount = sapeProxy.SearchSites urlId filter pageNumber positionsCount
 
     member x.SearchSites urlId filter =
-        let sitesCount = 1000
+        let sitesCount = 2000
         let rec searchSites pageNumber (resultSites:XmlRpcStruct list) =
             let res = 
                 try 
@@ -153,3 +155,5 @@ type SapeApi() =
     member x.GetRegions() = sapeProxy.GetRegions()
 
     member x.GetYacaCategories() = sapeProxy.GetYacaCategories()
+
+    member x.PlacementAccept id = sapeProxy.PlacementAccept id

@@ -8,7 +8,7 @@
     <ProjectGuid>{41def593-026c-4d4a-935a-8800bebc1520}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>FSTypes</RootNamespace>
-    <AssemblyName>FSTypes</AssemblyName>
+    <AssemblyName>Sapientum.Types</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <Name>FSTypes</Name>
   </PropertyGroup>
@@ -49,7 +49,6 @@
     <Compile Include="Helper.fs" />
     <Compile Include="SapeTypes.fs" />
     <Compile Include="WpfTypes.fs" />
-    <Compile Include="SapeApi.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
