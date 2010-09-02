@@ -65,7 +65,11 @@ type WpfCollectionData() =
 type LoginInfo() =
     inherit WpfData()
  
-    let _currentLogin = ref String.Empty // "sanyok_m" 
+#if DEBUG
+    let _currentLogin = ref "sanyok_m"
+#else
+    let _currentLogin = ref String.Empty
+#endif
     let _passwordHash = ref String.Empty
     let _status       = ref LoginStatus.LoggedOff
 
@@ -108,7 +112,7 @@ type Project (id:Id, name:Name, urls:ProjectUrl list) =
 
     let _name = ref name
     let _urls = 
-        let urls' = urls |> List.sortBy (fun x -> x.UrlName) |> List.rev 
+        let urls' = urls |> List.sortBy (fun x -> x.UrlName) // |> List.rev 
         new List<ProjectUrl>(urls')
 
     member x.Name 
@@ -133,7 +137,7 @@ type Projects() =
         x.Caller(_projects.Clear)
         prjs 
         |> Seq.sortBy (fun x -> x.Name) 
-        |> List.ofSeq |> List.rev |> Seq.ofList
+        //|> List.ofSeq |> List.rev |> Seq.ofList
         |> Seq.iter (fun prj -> x.Caller(_projects.Add, prj))
         x.TriggerChangeProperties ["ProjectsCount"; "Projects"]
 
@@ -196,7 +200,7 @@ type DataProviderForWaitingSites() =
                             )
                         let label = new Label(Content = hyperlink)
                         hyperlink.RequestNavigate |> Event.add _handler |> ignore
-                        let checkBox = new CheckBox()
+                        let checkBox = new CheckBox(Margin = new Windows.Thickness(0.0,5.0,0.0,0.0))
                         stackPanel0.Children.Add(checkBox) |> ignore
                         stackPanel0.Children.Add(label) |> ignore
                         Grid.SetRow(stackPanel0, 0)
@@ -212,12 +216,15 @@ type DataProviderForWaitingSites() =
                         Grid.SetRow(stackPanel2, 2)
 
                         let stackPanel3 = new StackPanel(Orientation = Orientation.Horizontal)
-                        let titleBox = 
+                        let textBlock = 
                             new TextBlock(
                                 Text = "Title: ", 
                                 TextWrapping = Windows.TextWrapping.Wrap,
+                                //Width = Double.NaN,
                                 Height = 60.0)
-                        stackPanel3.Children.Add(titleBox) |> ignore
+                
+                        //stackPanel3.Children.Add(textBlock) |> ignore
+                        paragraph.Inlines.Add(textBlock)
                         Grid.SetRow(stackPanel3, 3)
 
                         grid.Children.Add(stackPanel0) |> ignore
@@ -227,7 +234,7 @@ type DataProviderForWaitingSites() =
 
                         _placements.Add((checkBox,urlLink))
 
-                        yield (navigateUri urlLink),(urlLink,titleBox)
+                        yield (navigateUri urlLink),(urlLink,textBlock)
                     } |> Map.ofSeq
             ()
         )
@@ -240,7 +247,7 @@ type DataProviderForWaitingSites() =
     member x.GetPlacements() = 
         _placements 
         |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value)
-        |> Seq.map (fun (_,urlLink) -> urlLink)
+        |> Seq.map (fun (checkBox,urlLink) -> (checkBox.IsEnabled <- false; urlLink))
         |> List.ofSeq
     
     member x.Metadata = _table
@@ -275,6 +282,7 @@ type DataProviderForSearchedSites() =
 
                         let grid = new Grid()
                         let paragraph = new Paragraph()
+                        paragraph.BorderThickness <- new Windows.Thickness(1.0, 1.0, 1.0, 1.0)
                         paragraph.Inlines.Add(grid)
                         let tableCell1 = new TableCell(paragraph)
                         row1.Cells.Add(tableCell1)
@@ -290,7 +298,10 @@ type DataProviderForSearchedSites() =
                                 new Run(site.Url),
                                 NavigateUri = new Uri(site.Url)
                             )
-                        let label = new Label(Content = hyperlink, Margin = new Windows.Thickness(0.0,3.0,0.0,0.0))
+                        let label = new Label(
+                                        Content = hyperlink, 
+                                        Margin = new Windows.Thickness(0.0,3.0,0.0,0.0),
+                                        FontWeight = Windows.FontWeights.UltraBold)
                         hyperlink.RequestNavigate |> Event.add _handler |> ignore
                         //stackPanel0.Children.Add(new CheckBox()) |> ignore
                         stackPanel0.Children.Add(label) |> ignore
@@ -314,15 +325,15 @@ type DataProviderForSearchedSites() =
                         Grid.SetRow(stackPanel2, 2)
 
                         //let links = new StackPanel(Margin = new Windows.Thickness(5.0,5.0,0.0,0.0), CanVerticallyScroll = true, Height = 150.0)
-                        let links = new ListBox(Margin = new Windows.Thickness(5.0,5.0,0.0,0.0))
-                        Grid.SetRow(links, 3)
+                        //let links = new ListBox(Margin = new Windows.Thickness(5.0,5.0,0.0,0.0))
+                        //Grid.SetRow(links, 3)
 
                         grid.Children.Add(stackPanel0) |> ignore
                         grid.Children.Add(stackPanel1) |> ignore
                         grid.Children.Add(stackPanel2) |> ignore
-                        grid.Children.Add(links) |> ignore
+                        //grid.Children.Add(links) |> ignore
 
-                        yield site.Url,(site, links)
+                        yield site.Url,(site, paragraph)
                     } |> Map.ofSeq
             ()
         )
@@ -331,7 +342,7 @@ type DataProviderForSearchedSites() =
         x.Caller(fun () ->
             match Map.tryFind site.Url !_map with
             | Some (_,links) ->
-                let stackPanel = new StackPanel()
+                let stackPanel = new StackPanel(Margin = new Windows.Thickness(10.0,0.0,0.0,0.0))
             
                 let hyperlink = 
                     new Hyperlink(
@@ -341,7 +352,7 @@ type DataProviderForSearchedSites() =
                 hyperlink.RequestNavigate |> Event.add _handler |> ignore
                 let label = new Label(Content = hyperlink)
                 let stackPanel1 = new StackPanel(Orientation = Orientation.Horizontal)
-                let checkBox = new CheckBox()
+                let checkBox = new CheckBox(Margin = new Windows.Thickness(0.0,5.0,0.0,0.0))
                 stackPanel1.Children.Add(checkBox) |> ignore
                 stackPanel1.Children.Add(label) |> ignore
 
@@ -354,11 +365,17 @@ type DataProviderForSearchedSites() =
 
                 stackPanel.Children.Add(stackPanel1) |> ignore
                 stackPanel.Children.Add(stackPanel2) |> ignore
-                stackPanel.Children.Add(new Label(Content = sprintf "Title: %s" title)) |> ignore
+                //stackPanel.Children.Add(new Label(Content = sprintf "Title: %s" title)) |> ignore
 
                 _placements.Add((checkBox,page))
 
-                links.Items.Add(stackPanel) |> ignore
+                //links.Items.Add(stackPanel) |> ignore
+                links.Inlines.Add(stackPanel)
+                links.Inlines.Add(new TextBlock(
+                                    Text = sprintf "Title: %s" title, 
+                                    TextWrapping = Windows.TextWrapping.Wrap,
+                                    Height = Double.NaN, 
+                                    Margin = new Windows.Thickness(10.0,0.0,0.0,0.0)))
             | None -> ()
         )
 

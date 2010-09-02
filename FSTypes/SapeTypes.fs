@@ -51,10 +51,14 @@ type Project(xmlRpcStruct:XmlRpcStruct) =
     static member create xmlRpcStruct = new Project(xmlRpcStruct)
 
 type ProjectUrl(xmlRpcStruct:XmlRpcStruct) = 
-    let _id         = unbox<Id>     xmlRpcStruct.["id"]
-    let _projectId  = unbox<Int32>  xmlRpcStruct.["project_id"]
-    let _name       = unbox<Name>   xmlRpcStruct.["name"]
-    let _url        = unbox<String> xmlRpcStruct.["url"]
+    let _id                 = unbox<Id>       xmlRpcStruct.["id"]
+    let _projectId          = unbox<int>      xmlRpcStruct.["project_id"]
+    let _name               = unbox<Name>     xmlRpcStruct.["name"]
+    let _url                = unbox<string>   xmlRpcStruct.["url"]
+    let _amountYesterday    = unbox<float>    xmlRpcStruct.["amount_yesterday"]
+    let _amountToday        = unbox<float>    xmlRpcStruct.["amount_today"]
+    let _amountTotal        = unbox<float>    xmlRpcStruct.["amount_total"]
+    let _dateCreated        = unbox<DateTime> xmlRpcStruct.["date_created"]
   
     member x.Id         = _id
     member x.ProjectId  = _projectId

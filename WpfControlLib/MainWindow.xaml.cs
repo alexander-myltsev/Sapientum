@@ -70,6 +70,17 @@ namespace WpfControlLib
             //mainGrid.Resources["projects"] = projects;
             //projectsTreeView.DataContext = ((Projects)mainGrid.Resources["projects"]).Projects;
             //projectsTreeView.DataContext = projects;
+
+#if DEBUG
+            passwordBox.Password = "abc123";
+            textBoxPriceTo.Text = "3";
+            checkBoxNestedLevelMain.IsChecked = true;
+            checkBoxNestedLevel2nd.IsChecked = true;
+            //checkBoxNestedLevel3rd.IsChecked = true;
+            textBoxWords.Text = "квартиры, челябинск";
+            //textBoxPrFrom.Text = "1";
+            //textBoxCitationIndexFrom.Text = "4";
+#endif
         }
 
         //public delegate void ProjectUrlSelectedHandler(object sender, int projectUrlId);
@@ -130,18 +141,18 @@ namespace WpfControlLib
             return passwordBox.Password;
         }
 
-        private void ButtonLoginClick__(object sender, RoutedEventArgs e)
-        {
-            foreach (var project in ((Projects)mainGrid.Resources["projects"]).Projects)
-            {
-                project.Name += "!";
+        //private void ButtonLoginClick__(object sender, RoutedEventArgs e)
+        //{
+        //    foreach (var project in ((Projects)mainGrid.Resources["projects"]).Projects)
+        //    {
+        //        project.Name += "!";
 
-                foreach (var projectUrl in project.Urls)
-                {
-                    projectUrl.UrlName += "!";
-                }
-            }
-        }
+        //        foreach (var projectUrl in project.Urls)
+        //        {
+        //            projectUrl.UrlName += "!";
+        //        }
+        //    }
+        //}
 
         private int _projectUrlIdSelected;
         private void RadioButtonChecked(object sender, RoutedEventArgs e)
@@ -242,7 +253,7 @@ namespace WpfControlLib
                                                                (bool)radioButtonAllSites.IsChecked,
                                                                textBoxPrFrom.Text, textBoxPrTo.Text, textBoxCitationIndexFrom.Text,
                                                                textBoxCitationIndexTo.Text,
-                                                               textBoxExternalLinksCount.Text, 
+                                                               textBoxExternalLinksCount.Text,
                                                                textBoxExternalLinksForecastCount.Text,
                                                                textBoxPriceFrom.Text,
                                                                textBoxPriceTo.Text,

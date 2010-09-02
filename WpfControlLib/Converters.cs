@@ -126,7 +126,7 @@ namespace WpfControlLib
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 var val = (FSharpList<Site>)value;
-                return "Скачать " + val.Length + " открытых сайтов";
+                return "Скачать " + val.Length + " открытых площадок";
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
@@ -141,7 +141,7 @@ namespace WpfControlLib
             public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
             {
                 var val = (FSharpList<Site>)value;
-                return "Разместить " + val.Length + " закрытых сайтов";
+                return "Разместить " + val.Length + " закрытых площадок";
             }
 
             public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

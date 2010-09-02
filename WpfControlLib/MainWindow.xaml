@@ -1,7 +1,7 @@
 ﻿<Window x:Class="WpfControlLib.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:WpfControlLib="clr-namespace:WpfControlLib" xmlns:Types="clr-namespace:Sapientum.Types.Wpf;assembly=Sapientum.Types" xmlns:Converters="clr-namespace:WpfControlLib.Converters" 
-        Title="Сапиентум" Height="640" Width="850" WindowStartupLocation="CenterScreen" Loaded="WindowLoaded">
+        Title="Сапиентум" Height="640" Width="900" WindowStartupLocation="CenterScreen" Loaded="WindowLoaded" WindowState="Maximized">
     <Grid Name="mainGrid">
         <!--<Grid.DataContext>
              <ObjectDataProvider x:Name="dataProvider" ObjectType="{x:Type Types:DataProvider}"/> 
@@ -56,7 +56,7 @@
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
                                             <TextBlock Text="{Binding Path=UrlName}" Grid.Row="0" />
-                                            <TextBlock Text="{Binding Path=UrlId}" Grid.Row="1" />
+                                            <!--<TextBlock Text="{Binding Path=UrlId}" Grid.Row="1" />-->
                                         </Grid>
                                     </Expander>
                                 </StackPanel>
@@ -67,7 +67,7 @@
                                       ItemsSource="{Binding Path=Urls, UpdateSourceTrigger=PropertyChanged}"
                                       ItemTemplate="{StaticResource ProjectUrlTemplate}">
                             <Border BorderBrush="Black" BorderThickness="1" CornerRadius="10">
-                                <Expander x:Name="DoctorTemplateExpander" 
+                                <Expander Name="ProjectTemplateExpander" 
                                       HeaderTemplate="{DynamicResource ProjectHeaderTemplate}" 
                                       Header="{Binding Path=This, UpdateSourceTrigger=PropertyChanged}" IsTabStop="False" 
                                       HorizontalAlignment="Left" IsEnabled="True" 
@@ -78,7 +78,7 @@
                                             <RowDefinition/>
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" Text="{Binding Path=Name, UpdateSourceTrigger=PropertyChanged}" />
-                                        <TextBlock Grid.Row="1" Text="This is a project" />
+                                        <!--<TextBlock Grid.Row="1" Text="Здесь может быть информация по проекту" />-->
                                     </Grid>
                                 </Expander>
                             </Border>
@@ -90,7 +90,7 @@
                     </Grid.Resources>
 
                     <Grid IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToButtonIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
-                        <Button Content="Войти" Height="23" Name="buttonLogin" Width="75" Margin="230,50,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="ButtonLoginClick__" />                        
+                        <Button Content="Войти" Height="23" Name="buttonLogin" Width="75" Margin="230,50,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />                        
                         <TextBox Height="23" Name="textBoxLogin" Width="120" Margin="100,20,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="{Binding Source={StaticResource loginInfo}, Path=CurrentLogin, UpdateSourceTrigger=PropertyChanged}" />
                         <PasswordBox Height="23" Name="passwordBox" Width="120" Margin="100,50,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
                     </Grid>
@@ -112,6 +112,10 @@
             </TabItem>
             <TabItem Header="Ждут подтверждения" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
                 <Grid>
+                    <!--<Label Margin="50,50,0,0" FontWeight="UltraBold">
+                        <Hyperlink>123</Hyperlink>
+                    </Label>-->
+                    
                     <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Обновить" Margin="5,5,0,0" Click="WaitingSitesButtonOnClick"></Button>
                     <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Купить" Margin="100,5,0,0" Click="BuyWaitingSitesButtonOnClick"></Button>
                     <FlowDocumentReader Margin="0,40,0,0">
@@ -160,7 +164,7 @@
                             <Label Content="Цена в месяц от "></Label>
                             <TextBox Width="40" Name="textBoxPriceFrom"></TextBox>
                             <Label Content=" до "></Label>
-                            <TextBox Width="40" Name="textBoxPriceTo" Text="3"></TextBox>
+                            <TextBox Width="40" Name="textBoxPriceTo" Text=""></TextBox>
                             <Label Content=" руб."></Label>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
@@ -215,7 +219,7 @@
                         </StackPanel>
                         <StackPanel Orientation="Vertical">
                             <Label Content="Ключевые слова"></Label>
-                            <TextBox Height="80" TextWrapping="WrapWithOverflow" Name="textBoxWords" Text="квартиры, челябинск"></TextBox>
+                            <TextBox Height="80" TextWrapping="WrapWithOverflow" Name="textBoxWords" Text=""></TextBox>
                         </StackPanel>
                     </StackPanel>
                     <StackPanel Margin="5,5,5,5" Grid.Column="2">

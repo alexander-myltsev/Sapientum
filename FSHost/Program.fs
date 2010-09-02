@@ -87,7 +87,9 @@ let getTitle (headers:WebHeaderCollection) (responseStream:Stream) =
                 let bytesRead = memoryStream.Read(buffer, 0, buffer.Length)
                 Encoding.GetEncoding(1251).GetString(buffer, 0, bytesRead)
         match html with
-        | ParseRegex @"<title>(.*?)</title>" [title] -> return title.Substring(0, min 75 title.Length).Replace('\n',' ').Replace('\r',' ')
+        | ParseRegex @"<title>(.*?)</title>" [title] -> 
+            return (if title.Length > 100 then sprintf "%s..." (title.Substring(0, 100))
+                    else sprintf "%s" title).Replace('\n',' ').Replace('\r',' ')
         | _ -> return "не найден на странице"
     }
 
@@ -125,7 +127,7 @@ let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) (dataProviderForWait
 
 let ProcessSitesSearch (sapeApi:SapeApi) (customFilter:CustomFilter) (uiState:UIState) =
     async {
-        let filters = sapeApi.GetFilters()
+        //let filters = sapeApi.GetFilters()
         let sites = sapeApi.SearchSites customFilter.ProjectUrlId (customFilter.ToXmlRpcStruct())
         MessageBox.Show(sprintf "Найдено %d сайтов" sites.Length) |> ignore
         let closedSites = sites |> List.filter (fun site -> site.Url |> String.IsNullOrEmpty)
@@ -159,6 +161,7 @@ let ProcessOpenedSitesDownloading (sapeApi:SapeApi) (projectUrlId:Id) (customFil
                         req.Abort()
                 }
                 pages 
+                    |> Seq.take (min pages.Length 15) |> List.ofSeq
                     |> List.map getTitleAsync 
                     |> Async.Parallel 
                     |> Async.Ignore |> Async.Start
@@ -172,7 +175,9 @@ let ProcessClosedSitesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (customFilte
         closedSites |> List.iter (fun site ->
             let pages = sapeApi.SearchPages projectUrlId site.Id (customFilter.ToXmlRpcStruct()) 
             try
-                pages |> Seq.take 50 |> List.ofSeq |> List.iter (fun page ->
+                pages 
+                |> Seq.take (min 15 pages.Length) |> List.ofSeq 
+                |> List.iter (fun page ->
                     let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
                     ()
                 )
@@ -210,9 +215,9 @@ do
     let dataProviderForSearchedSites = win.GetDataProviderForSearchedSites()
     let dataProviderForWaitingSites  = win.GetDataProviderForWaitingSites()
 
-//#if DEBUG
-//    ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData
-//#endif
+#if DEBUG
+    ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData
+#endif
 
 //    win.ButtonLoginClick 
 //    |> Event.add (fun x -> ProcessLogin sapeApi loginInfoWpfData (win.GetPassword().ToMD5Hash()) projectsWpfData)

@@ -100,21 +100,26 @@ type UrlLinkStatus =
 
 type SapeApi() = 
     let sapeProxy = XmlRpcProxyGen.Create<ISapeApi>()
+    let _sync = new Object()
   
     member x.Login login password isMd5 = 
         try 
-            let result = sapeProxy.Login login password isMd5
+            let result = lock _sync (fun _ -> sapeProxy.Login login password isMd5)
             Some result
         with
         | :? XmlRpcFaultException as ex when ex.FaultCode = 666 -> None
 
-    member x.GetUserInfo() = sapeProxy.GetUserInfo() |> UserInfo.create
+    member x.GetUserInfo() = 
+        lock _sync (fun _ -> sapeProxy.GetUserInfo() |> UserInfo.create)
 
-    member x.GetProjects() = sapeProxy.GetProjects false |> Array.map Project.create |> List.ofArray
+    member x.GetProjects() = 
+        lock _sync (fun _ -> sapeProxy.GetProjects false |> Array.map Project.create |> List.ofArray)
 
-    member x.GetProjectUrls id = sapeProxy.GetProjectUrls id false |> Array.map ProjectUrl.create |> List.ofArray
+    member x.GetProjectUrls id = 
+        lock _sync (fun _ -> sapeProxy.GetProjectUrls id false |> Array.map ProjectUrl.create |> List.ofArray)
 
-    member x.GetFilters() = sapeProxy.GetFilters true |> Array.map Filter.create |> List.ofArray
+    member x.GetFilters() = 
+        lock _sync (fun _ -> sapeProxy.GetFilters true |> Array.map Filter.create |> List.ofArray)
 
     //member x.SearchSites urlId filter pageNumber positionsCount = sapeProxy.SearchSites urlId filter pageNumber positionsCount
 
@@ -123,7 +128,7 @@ type SapeApi() =
         let rec searchSites pageNumber (resultSites:XmlRpcStruct list) =
             let res = 
                 try 
-                    sapeProxy.SearchSites urlId filter pageNumber sitesCount |> List.ofArray |> Option.Some
+                    lock _sync (fun _ -> sapeProxy.SearchSites urlId filter pageNumber sitesCount |> List.ofArray |> Option.Some)
                 with
                     | :? XmlRpcFaultException as ex when ex.FaultCode = 667 -> Some []
                     | :? XmlRpcFaultException as ex when ex.FaultCode = 7000 -> printfn "%s" ex.Message; None
@@ -138,22 +143,27 @@ type SapeApi() =
             | None -> resultSites |> List.map Site.create 
         searchSites 0 []
 
-    member x.GetProjectLinks projectId = sapeProxy.GetProjectLinks projectId
+    member x.GetProjectLinks projectId = 
+        lock _sync (fun _ -> sapeProxy.GetProjectLinks projectId)
 
-    member x.GetUrlsLinks urlsIds (status:UrlLinkStatus) = sapeProxy.GetUrlsLinks urlsIds status.StringValue |> Array.map Link.create |> List.ofArray
+    member x.GetUrlsLinks urlsIds (status:UrlLinkStatus) = 
+        lock _sync (fun _ -> sapeProxy.GetUrlsLinks urlsIds status.StringValue |> Array.map Link.create |> List.ofArray)
 
-    member x.GetUrlLinks  urlId   (status:UrlLinkStatus) = sapeProxy.GetUrlLinks  urlId   status.StringValue |> Array.map Link.create |> List.ofArray
+    member x.GetUrlLinks urlId (status:UrlLinkStatus) = 
+        lock _sync (fun _ -> sapeProxy.GetUrlLinks  urlId   status.StringValue |> Array.map Link.create |> List.ofArray)
 
-    member x.SearchPages urlId siteId filter = sapeProxy.SearchPages urlId siteId filter |> Array.map Page.create |> List.ofArray
+    member x.SearchPages urlId siteId filter = 
+        lock _sync (fun _ -> sapeProxy.SearchPages urlId siteId filter |> Array.map Page.create |> List.ofArray)
 
-    member x.PlacementCreate pageId urlId anchor = sapeProxy.PlacementCreate pageId urlId anchor
+    member x.PlacementCreate pageId urlId anchor = 
+        lock _sync (fun _ -> sapeProxy.PlacementCreate pageId urlId anchor)
 
-    member x.GetCategories() = sapeProxy.GetCategories()
+    member x.GetCategories() = lock _sync (fun _ -> sapeProxy.GetCategories())
 
-    member x.GetDomainZones() = sapeProxy.GetDomainZones()
+    member x.GetDomainZones() = lock _sync (fun _ -> sapeProxy.GetDomainZones())
 
-    member x.GetRegions() = sapeProxy.GetRegions()
+    member x.GetRegions() = lock _sync (fun _ -> sapeProxy.GetRegions())
 
-    member x.GetYacaCategories() = sapeProxy.GetYacaCategories()
+    member x.GetYacaCategories() = lock _sync (fun _ -> sapeProxy.GetYacaCategories())
 
-    member x.PlacementAccept id = sapeProxy.PlacementAccept id
+    member x.PlacementAccept id = lock _sync (fun _ -> sapeProxy.PlacementAccept id)
