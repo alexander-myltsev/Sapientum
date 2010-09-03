@@ -1,10 +1,12 @@
 ﻿namespace Sapientum.Types.Sape
 
 open Sapientum
+open Sapientum.Helper
 
 open CookComputing.XmlRpc
 
 open System
+open System.Text
 
 type UriStr = string
 and HostStr = string
@@ -275,9 +277,9 @@ type DateAdded =
     | LastMonth = 4
 
 type PagesFromSite = 
-    | Single = 0
-    | Optimal = 1
-    | All = 2
+    | Single
+    | Optimal
+    | All
 
 type Categories = 
     | All
@@ -292,9 +294,34 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
                   externalLinksCount:int option, externalLinksForecastCount:int option, priceRange:float option*float option, domainDaysAge:int option, 
                   isDmoz:TripleAnswer, isYaca:TripleAnswer, domainLevel:DomainLevel, nestedLevel:int*int,
                   siteCategories:Categories, yacaCategories:Categories, regions:Categories, domainZones:Categories,
-                  words:string, dateAdded:DateAdded, showWithPlacedLinks:bool,
+                  words:string, dateAdded:DateAdded, dontShowWithPlacedLinks:bool,
                   isInYandex:TripleAnswer, isInGoogle:TripleAnswer, pagesFromSite:PagesFromSite) = 
     
+    static let _siteCategories = ref Map.empty
+    static let _yacaCategories = ref Map.empty
+    static let _regions = ref Map.empty
+    static let _domainZones = ref Map.empty
+
+    static member UpdateCategories (siteCategories:XmlRpcStruct array) (domainZones:XmlRpcStruct array) 
+                                   (regions:XmlRpcStruct array) (yacaCategories:XmlRpcStruct array) = 
+        _siteCategories := 
+            siteCategories 
+            |> Array.map (fun siteCategory -> (unbox<Name> siteCategory.["name"],unbox<Id> siteCategory.["id"]))
+            |> Map.ofArray
+        _yacaCategories :=
+            yacaCategories
+            |> Array.map (fun siteCategory -> (unbox<Name> siteCategory.["name"],unbox<Id> siteCategory.["id"]))
+            |> Map.ofArray
+        _regions :=
+            regions
+            |> Array.map (fun siteCategory -> (unbox<Name> siteCategory.["name"],unbox<Id> siteCategory.["id"]))
+            |> Map.ofArray
+        _domainZones :=
+            domainZones
+            |> Array.map (fun siteCategory -> (unbox<Name> siteCategory.["zone"],unbox<Id> siteCategory.["id"]))
+            |> Map.ofArray
+        ()
+
     member x.ProjectUrlId = projectUrlId
 
     member x.ToXmlRpcStruct() = 
@@ -319,9 +346,68 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
         | Level2 -> xmlRpcStruct.Add("domain_level", 2)
         | Level3 -> xmlRpcStruct.Add("domain_level", 3)
 
-        //match domainZones with
+        match siteCategories with
+        | All -> ()
+        | Selected categories -> 
+            let arr = 
+                categories 
+                |> Array.fold (fun (sb:StringBuilder) cat -> 
+                    match !_siteCategories |> Map.tryFind cat with
+                    | Some x -> sb.Append(sprintf "_%d" x)
+                    | None -> sb) (new StringBuilder())
+                |> StringBuilder.toString
+            xmlRpcStruct.Add("categories", arr.Substring(1))
 
-        //showWithPlacedLinks
+        match yacaCategories with
+        | All -> ()
+        | Selected categories -> 
+            let arr = 
+                categories 
+                |> Array.fold (fun (sb:StringBuilder) cat -> 
+                    match !_yacaCategories |> Map.tryFind cat with
+                    | Some x -> sb.Append(sprintf "_%d" x)
+                    | None -> sb) (new StringBuilder())
+                |> StringBuilder.toString
+            xmlRpcStruct.Add("yaca_categories", arr.Substring(1))
+
+        match regions with 
+        | All -> ()
+        | Selected categories -> 
+            let arr = 
+                categories 
+                |> Array.fold (fun (sb:StringBuilder) cat -> 
+                    match !_regions |> Map.tryFind cat with
+                    | Some x -> sb.Append(sprintf "_%d" x)
+                    | None -> sb) (new StringBuilder())
+                |> StringBuilder.toString
+            xmlRpcStruct.Add("regions", arr.Substring(1))
+
+        match domainZones with
+        | All -> ()
+        | Selected categories -> 
+            let arr = 
+                categories 
+                |> Array.fold (fun (sb:StringBuilder) cat -> 
+                    match !_domainZones |> Map.tryFind cat with
+                    | Some x -> sb.Append(sprintf "_%d" x)
+                    | None -> sb) (new StringBuilder())
+                |> StringBuilder.toString
+            xmlRpcStruct.Add("domain_zones", arr.Substring(1))
+
+        match dateAdded with 
+        | DateAdded.WholeTime -> ()
+        | DateAdded.Today -> xmlRpcStruct.Add("date_added", DateTime.Now.ToString("dd.MM.yyyy H:mm:ss"))
+        | DateAdded.Last3Days -> xmlRpcStruct.Add("date_added", (DateTime.Now - TimeSpan.FromDays(3.0)).ToString("dd.MM.yyyy H:mm:ss"))
+        | DateAdded.Last7Days -> xmlRpcStruct.Add("date_added", (DateTime.Now - TimeSpan.FromDays(7.0)).ToString("dd.MM.yyyy H:mm:ss"))
+        | DateAdded.LastMonth -> xmlRpcStruct.Add("date_added", (DateTime.Now - TimeSpan.FromDays(30.0)).ToString("dd.MM.yyyy H:mm:ss"))
+        | _ -> failwith "unexpected dateAdded"
+
+        match pagesFromSite with
+        | PagesFromSite.Single -> xmlRpcStruct.Add("pages_per_site", "one")
+        | PagesFromSite.Optimal -> xmlRpcStruct.Add("pages_per_site", "preferred")
+        | PagesFromSite.All -> ()
+
+        xmlRpcStruct.Add("no_double_in_project", if dontShowWithPlacedLinks then 0 else 1)
 
         xmlRpcStruct.Add("flag_blocked_in_google", (int)isInGoogle)
 
@@ -352,32 +438,6 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
         | None, None -> ()
 
         xmlRpcStruct.Add("nogood", (int)searchArea)
-
-//        let xmlRpcStruct1 = new XmlRpcStruct()
-//        let processXmlRpcStruct key = 
-//            if xmlRpcStruct.ContainsKey(key) then xmlRpcStruct1.Add(key, xmlRpcStruct.[key])
-//        processXmlRpcStruct "cy_2"
-//        processXmlRpcStruct "words"
-//        processXmlRpcStruct "ext_links_forecast"
-//        processXmlRpcStruct "level_from"
-//        processXmlRpcStruct "domain_level"
-//        processXmlRpcStruct "domain_zones"
-//        processXmlRpcStruct "no_double_in_project"
-//        processXmlRpcStruct "flag_blocked_in_google"
-//        processXmlRpcStruct "level_2"
-//        processXmlRpcStruct "days_old_whois"
-//        processXmlRpcStruct "price_2"
-//        processXmlRpcStruct "ext_links"
-//        processXmlRpcStruct "in_yaca"
-//        processXmlRpcStruct "in_dmoz"
-//        processXmlRpcStruct "pr_2"
-//        processXmlRpcStruct "cy_from"
-//        processXmlRpcStruct "nogood"
-//        processXmlRpcStruct "flag_blocked_in_yandex"
-//        processXmlRpcStruct "pr_from"
-//        processXmlRpcStruct "price_from"
-//
-//        xmlRpcStruct1
     
         xmlRpcStruct
 
@@ -391,7 +451,7 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
                          yacaCategoriesIsAll:bool, yacaCategoriesSelected:string array,
                          regionsIsAll:bool, regionsSelected:string array,
                          domainZonesIsAll:bool, domainZonesSelected:string array,
-                         words:string, dateAdded:int, showWithPlacedLinks:bool,
+                         words:string, dateAdded:int, dontShowWithPlacedLinks:bool,
                          isInYandex:int, isInGoogle:int, 
                          pagesFromSiteSingle:bool, pagesFromSiteOptimal:bool, pagesFromSiteAll:bool) = 
         let searchArea = 
@@ -455,5 +515,5 @@ type CustomFilter(projectUrlId:int, searchArea:SearchArea, prRange:int option*in
             | _ -> failwith "Filter.Create/pagesFromSite"
         let filter = new CustomFilter(projectUrlId, searchArea, prRange, currentCitationIndexRange, externalLinksCount, externalLinksForecastCount, priceRange, domainDaysAge, 
                                       isDmoz, isYaca, domainLevel, netstedLevel, siteCategories, yacaCategories, regions, domainZones, 
-                                      words, dateAdded, showWithPlacedLinks, isInYandex, isInGoogle, pagesFromSite)
+                                      words, dateAdded, dontShowWithPlacedLinks, isInYandex, isInGoogle, pagesFromSite)
         filter

@@ -79,7 +79,7 @@ MP3
             InitializeComponent();
 
             _checkBoxes = CategoriesLongString.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries)
-               .Select(str => new CheckBox { Content = str })
+               .Select(str => new CheckBox { Content = str.Trim() })
                .ToList();
             for (int i = 0; i < _checkBoxes.Count; i++)
             {

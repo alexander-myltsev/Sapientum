@@ -243,7 +243,10 @@
                         <RadioButton GroupName="PagesFromSite" Content="Одна" Name="radioButtonPagesFromSiteSingle"></RadioButton>
                         <RadioButton GroupName="PagesFromSite" Content="Оптимальные" IsChecked="True" Name="radioButtonPagesFromSiteOptimal"></RadioButton>
                         <RadioButton GroupName="PagesFromSite" Content="Все" Name="radioButtonPagesFromSiteAll"></RadioButton>
-                        <CheckBox Content="Отображать с размещенными ссылками" Margin="0,8,0,0" Name="checkBoxShowWithPlacedLinks"></CheckBox>
+                        <CheckBox Margin="0,8,0,0" Name="checkBoxDontShowWithPlacedLinks">
+                            <TextBlock Text="Не отображать сайты, уже купленные в рамках других URL текущего проекта" TextWrapping="WrapWithOverflow">                                
+                            </TextBlock>
+                        </CheckBox>
                         <StackPanel>
                             <Label Content="Время добавления в систему"></Label>
                             <ComboBox Width="150" HorizontalAlignment="Left" Name="comboBoxDateAdded">

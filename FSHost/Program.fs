@@ -20,7 +20,7 @@ let ProcessLogin (sapeApi:SapeApi) (loginInfoWpfData:LoginInfo) (passwordHash:St
     async {
         Debug.WriteLine("login launched...")
         loginInfoWpfData.Status <- LoginStatus.LoggingIn
-        Threading.Thread.Sleep 5000
+        //Threading.Thread.Sleep 5000
         loginInfoWpfData.PasswordHash <- passwordHash
         
         let result = sapeApi.Login loginInfoWpfData.CurrentLogin loginInfoWpfData.PasswordHash true
@@ -28,6 +28,8 @@ let ProcessLogin (sapeApi:SapeApi) (loginInfoWpfData:LoginInfo) (passwordHash:St
         | None ->
             loginInfoWpfData.Status <- LoginStatus.LoginFailed
         | Some res ->
+            //let filters = sapeApi.GetFilters()
+
             let userInfo = sapeApi.GetUserInfo()
             loginInfoWpfData.Balance <- userInfo.Balance
             loginInfoWpfData.LoggedLogin <- userInfo.Login
@@ -39,6 +41,9 @@ let ProcessLogin (sapeApi:SapeApi) (loginInfoWpfData:LoginInfo) (passwordHash:St
                 let domainZones = sapeApi.GetDomainZones()
                 let regions = sapeApi.GetRegions()
                 let yacaCategories = sapeApi.GetYacaCategories()
+
+                CustomFilter.UpdateCategories categories domainZones regions yacaCategories
+
                 ()
             } |> Async.Start
             
@@ -127,7 +132,6 @@ let ProcessProjectSelection (sapeApi:SapeApi) (prjUrlId:Id) (dataProviderForWait
 
 let ProcessSitesSearch (sapeApi:SapeApi) (customFilter:CustomFilter) (uiState:UIState) =
     async {
-        //let filters = sapeApi.GetFilters()
         let sites = sapeApi.SearchSites customFilter.ProjectUrlId (customFilter.ToXmlRpcStruct())
         MessageBox.Show(sprintf "Найдено %d сайтов" sites.Length) |> ignore
         let closedSites = sites |> List.filter (fun site -> site.Url |> String.IsNullOrEmpty)

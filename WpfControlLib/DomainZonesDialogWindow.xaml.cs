@@ -21,7 +21,7 @@ namespace WpfControlLib
 .name .ws .in .us .tj .uk .lv .md .cc .am .kg .eu .de .tv .pl .mobi .gg .ee .cz .nl
 .it .il .me .ca .at .au .be .ch .ge .bz .az .cx .lt .dk .asia .fm .gr .za .es .nu
 .no .ro .ms .edu .fi .im .se .tk .an .br .ec .hu .ie .mn .sk .st .th .to .travel .bg
-.cd .dj .gs .hr .id .io .jp .kr .li .nz .pro .pt .sh .tr .tw .vc .vg .vu ";
+.cd .dj .gs .hr .id .io .jp .kr .li .nz .pro .pt .sh .tr .tw .vc .vg .vu";
 
             var strings = allDomainZones.Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
             var stackPanels = new[] { stackPanel0, stackPanel1, stackPanel2, stackPanel3, stackPanel4 };
@@ -33,7 +33,7 @@ namespace WpfControlLib
                     .ToList()
                     .ForEach(domainZone =>
                                  {
-                                     var checkBox = new CheckBox { Content = domainZone };
+                                     var checkBox = new CheckBox { Content = domainZone.Trim() };
                                      stackPanel.Children.Add(checkBox);
                                      _checkBoxes.Add(checkBox);
                                  });

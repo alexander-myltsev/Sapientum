@@ -274,7 +274,7 @@ namespace WpfControlLib
                                                                (bool)radioButtonDomainZonesIsAll.IsChecked,
                                                                _domainZonesDialogWindow.GetSelected(),
                                                                textBoxWords.Text, comboBoxDateAdded.SelectedIndex,
-                                                               (bool)checkBoxShowWithPlacedLinks.IsChecked,
+                                                               (bool)checkBoxDontShowWithPlacedLinks.IsChecked,
                                                                comboBoxIsInYandex.SelectedIndex, comboBoxIsInGoogle.SelectedIndex,
                                                                (bool)radioButtonPagesFromSiteSingle.IsChecked,
                                                                (bool)radioButtonPagesFromSiteOptimal.IsChecked,

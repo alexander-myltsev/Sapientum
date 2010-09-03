@@ -24,8 +24,8 @@ namespace WpfControlLib
         {
             InitializeComponent();
 
-            const string regions = "Москва и область	Санкт-Петербургиобласть	СтраныСНГ	Украина	Беларусь	Казахстан";
-            const string regionsOfRussia = "ДальнийВосток	Поволжье	Северо-Запад	Сибирь	Урал	Центр	Юг";
+            const string regions = "Москва и область	Санкт-Петербург и область	Страны СНГ	Украина	Беларусь	Казахстан";
+            const string regionsOfRussia = "Дальний Восток	Поволжье	Северо-Запад	Сибирь	Урал	Центр	Юг";
 
             var regionsOfRussiaCheckboxes = regionsOfRussia
                 .Split('\t')
@@ -33,7 +33,7 @@ namespace WpfControlLib
                             {
                                 var checkBox = new CheckBox
                                                    {
-                                                       Content = str,
+                                                       Content = str.Trim(),
                                                        Margin = new Thickness(5, 0, 0, 0),
                                                    };
                                 return checkBox;
@@ -53,7 +53,7 @@ namespace WpfControlLib
                 .Split('\t')
                 .Select(str =>
                             {
-                                var checkBox = new CheckBox { Content = str };
+                                var checkBox = new CheckBox { Content = str.Trim() };
                                 return checkBox;
                             })
                 .ToList();
