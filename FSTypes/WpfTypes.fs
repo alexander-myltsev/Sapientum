@@ -156,7 +156,7 @@ type DataProviderForWaitingSites() =
     let _table = new Table( CellSpacing = 10.0 )
     let _handler (e:Windows.Navigation.RequestNavigateEventArgs) = 
         Diagnostics.Process.Start(e.Uri.ToString()) |> ignore
-    let _map = ref Map.empty
+    let _map : Map<string,(Link*TextBlock)> ref = ref Map.empty
 
     let _placements = new System.Collections.Generic.List<(CheckBox*Link)>()
     
@@ -222,7 +222,6 @@ type DataProviderForWaitingSites() =
                                 TextWrapping = Windows.TextWrapping.Wrap,
                                 //Width = Double.NaN,
                                 Height = 60.0)
-                
                         //stackPanel3.Children.Add(textBlock) |> ignore
                         paragraph.Inlines.Add(textBlock)
                         Grid.SetRow(stackPanel3, 3)
@@ -237,6 +236,14 @@ type DataProviderForWaitingSites() =
                         yield (navigateUri urlLink),(urlLink,textBlock)
                     } |> Map.ofSeq
             ()
+        )
+
+    member x.Highlight (words:string list) =
+        x.Caller ( fun _ -> 
+            !_map |> Map.iter (fun navUri (urlLink,textBlock) -> 
+                                    match words |> List.tryFind (textBlock.Text.ToLower().Contains) with
+                                    | Some word -> textBlock.Background <- Windows.Media.Brushes.Yellow
+                                    | None -> textBlock.Background <- null)
         )
 
     member x.UpdateTitle (urlLink:Link, title:string) = 
@@ -258,7 +265,7 @@ type DataProviderForSearchedSites() =
     let _table = new Table( CellSpacing = 10.0 )
     let _handler (e:Windows.Navigation.RequestNavigateEventArgs) = 
         Diagnostics.Process.Start(e.Uri.ToString()) |> ignore
-    let _map = ref Map.empty
+    let _map : Map<string, (Site*Paragraph*Collections.Generic.List<TextBlock>)> ref = ref Map.empty
     let _placements = new System.Collections.Generic.List<(CheckBox*Page)>()
 
     let _id = ref 0
@@ -333,15 +340,24 @@ type DataProviderForSearchedSites() =
                         grid.Children.Add(stackPanel2) |> ignore
                         //grid.Children.Add(links) |> ignore
 
-                        yield site.Url,(site, paragraph)
+                        yield site.Url,(site, paragraph, new Collections.Generic.List<TextBlock>())
                     } |> Map.ofSeq
             ()
+        )
+    member x.Highlight (words:string list) =
+        x.Caller ( fun _ -> 
+            !_map |> Map.iter (fun navUri (urlLink,paragraph,textBlocksList) -> 
+                                    textBlocksList |> Seq.iter (fun textBlock ->
+                                        match words |> List.tryFind (textBlock.Text.ToLower().Contains) with
+                                        | Some word -> textBlock.Background <- Windows.Media.Brushes.Yellow
+                                        | None -> textBlock.Background <- null)
+                                    )
         )
 
     member x.UpdateSitePage (site:Site, page:Page, title:string) = 
         x.Caller(fun () ->
             match Map.tryFind site.Url !_map with
-            | Some (_,links) ->
+            | Some (_,links,textBlocksList) ->
                 let stackPanel = new StackPanel(Margin = new Windows.Thickness(10.0,0.0,0.0,0.0))
             
                 let hyperlink = 
@@ -369,13 +385,16 @@ type DataProviderForSearchedSites() =
 
                 _placements.Add((checkBox,page))
 
-                //links.Items.Add(stackPanel) |> ignore
-                links.Inlines.Add(stackPanel)
-                links.Inlines.Add(new TextBlock(
+                let textBlock = new TextBlock(
                                     Text = sprintf "Title: %s" title, 
                                     TextWrapping = Windows.TextWrapping.Wrap,
                                     Height = Double.NaN, 
-                                    Margin = new Windows.Thickness(10.0,0.0,0.0,0.0)))
+                                    Margin = new Windows.Thickness(10.0,0.0,0.0,0.0))
+                textBlocksList.Add textBlock
+
+                //links.Items.Add(stackPanel) |> ignore
+                links.Inlines.Add(stackPanel)
+                links.Inlines.Add(textBlock)
             | None -> ()
         )
 
@@ -395,6 +414,8 @@ type EventType =
     | PlaceFoundClosedSites of (Id*CustomFilter*Site list)
     | PlaceOpenedPages of (Id)
     | PlaceWaitingPages of (Id)
+    | HighlightWaitingPages of String array
+    | HighlightSearchedPages of String array
 
 type UIEvent = delegate of Object*EventType->unit
 

@@ -310,5 +310,21 @@ namespace WpfControlLib
         {
             UIEventOccurred(this, EventType.NewPlaceOpenedPages(_projectUrlIdSelected));
         }
+
+        private void HighlightWaitingSitesTitlesClick(object sender, RoutedEventArgs e)
+        {
+            var words = textBoxHighlightWaitingSitesTitles.Text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+                words[i] = words[i].ToLower();
+            UIEventOccurred(this, EventType.NewHighlightWaitingPages(words));
+        }
+
+        private void HighlightSearchedSitesTitlesClick(object sender, RoutedEventArgs e)
+        {
+            var words = textBoxHighlightSearchedSitesTitles.Text.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+            for (int i = 0; i < words.Length; i++)
+                words[i] = words[i].ToLower();
+            UIEventOccurred(this, EventType.NewHighlightSearchedPages(words));
+        }
     }
 }

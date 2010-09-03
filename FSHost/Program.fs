@@ -204,6 +204,16 @@ let ProcessWaitingPagesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (placements
         )
     } |> Async.Start
 
+let ProcessHighlightWaitingPages (words:string list) (dataProviderForWaitingSites:DataProviderForWaitingSites) = 
+    async {
+        dataProviderForWaitingSites.Highlight words
+    } |> Async.Start
+
+let ProcessHighlightSearchedPages (words:string list) (dataProviderForSearchedSites:DataProviderForSearchedSites) =
+    async {
+        dataProviderForSearchedSites.Highlight words
+    } |> Async.Start
+
 [<STAThread>]
 do 
     let sapeApi = new SapeApi()
@@ -241,6 +251,8 @@ do
         | PlaceFoundClosedSites (projectUrlId, customFilter, closedSites) -> ProcessClosedSitesPlacement sapeApi projectUrlId customFilter closedSites
         | PlaceOpenedPages projectUrlId -> ProcessOpenedPagesPlacement sapeApi projectUrlId (dataProviderForSearchedSites.GetPlacements())
         | PlaceWaitingPages projectUrlId -> ProcessWaitingPagesPlacement sapeApi projectUrlId (dataProviderForWaitingSites.GetPlacements())
+        | HighlightWaitingPages words -> ProcessHighlightWaitingPages (List.ofArray words) dataProviderForWaitingSites
+        | HighlightSearchedPages words -> ProcessHighlightSearchedPages (List.ofArray words) dataProviderForSearchedSites
     )
 
     app.Run(win) |> ignore

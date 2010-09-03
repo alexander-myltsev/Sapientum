@@ -112,12 +112,12 @@
             </TabItem>
             <TabItem Header="Ждут подтверждения" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
                 <Grid>
-                    <!--<Label Margin="50,50,0,0" FontWeight="UltraBold">
-                        <Hyperlink>123</Hyperlink>
-                    </Label>-->
-                    
                     <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Обновить" Margin="5,5,0,0" Click="WaitingSitesButtonOnClick"></Button>
                     <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Купить" Margin="100,5,0,0" Click="BuyWaitingSitesButtonOnClick"></Button>
+
+                    <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Right" Content="Найти" Margin="0,5,5,0" Click="HighlightWaitingSitesTitlesClick"></Button>
+                    <TextBox Height="28" Width="250" Name="textBoxHighlightWaitingSitesTitles" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,100,0" ></TextBox>
+
                     <FlowDocumentReader Margin="0,40,0,0">
                         <FlowDocumentReader.Resources>
 
@@ -263,6 +263,10 @@
             <TabItem Header="Площадки" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
                 <Grid>
                     <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Купить" Margin="5,5,0,0" Click="BuySearchedSitesButtonOnClick"></Button>
+
+                    <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Right" Content="Найти" Margin="0,5,5,0" Click="HighlightSearchedSitesTitlesClick"></Button>
+                    <TextBox Height="28" Width="250" Name="textBoxHighlightSearchedSitesTitles" VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,5,100,0" ></TextBox>
+
                     <FlowDocumentReader Margin="0,40,0,0">
                         <FlowDocumentReader.Resources>
 
