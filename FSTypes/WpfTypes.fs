@@ -303,7 +303,8 @@ type DataProviderForSearchedSites() =
                         let hyperlink = 
                             new Hyperlink(
                                 new Run(site.Url),
-                                NavigateUri = new Uri(site.Url)
+                                NavigateUri = new Uri(site.Url),
+                                Foreground = Windows.Media.Brushes.Green
                             )
                         let label = new Label(
                                         Content = hyperlink, 

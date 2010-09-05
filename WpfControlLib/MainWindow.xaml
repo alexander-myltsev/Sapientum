@@ -94,7 +94,7 @@
                         <TextBox Height="23" Name="textBoxLogin" Width="120" Margin="100,20,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Text="{Binding Source={StaticResource loginInfo}, Path=CurrentLogin, UpdateSourceTrigger=PropertyChanged}" />
                         <PasswordBox Height="23" Name="passwordBox" Width="120" Margin="100,50,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
                     </Grid>
-                    <Label Content="Логин" Height="28" Name="labelLogin" Margin="20,20,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"  />
+                    <Label Content="Логин" Height="28" Name="labelLogin" Margin="20,20,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
                     <Label Content="Пароль" Height="28" Name="labelPassword" Margin="20,50,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" />
 
 
