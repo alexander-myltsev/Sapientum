@@ -67,7 +67,8 @@ type ISapeApi =
 
     /// (int) sape.placement_create((int)  page_id, (int) url_id, (char|int) anchor[, (float) max_price)]
     [<XmlRpcMethod("sape.placement_create")>]
-    abstract PlacementCreate : Id -> Id -> int -> int
+    //abstract PlacementCreate : Id -> Id -> int -> int
+    abstract PlacementCreate : Id -> Id -> int -> string
   
     /// (array) sape.get_filters([(boolean)  show_params = false]). 
     /// Получение списка фильтров, если указан параметр show_params, то возвращает параметры фильтра в виде хэша.
@@ -81,7 +82,8 @@ type ISapeApi =
     /// (bool) sape.placement_accept_seo((int) id) — 
     /// одобрение ссылки оптимизатором. Необходимо одобрять ссылки в статусе WAIT_SEO
     [<XmlRpcMethod("sape.placement_accept_seo")>]
-    abstract PlacementAccept : Id -> bool
+    //abstract PlacementAccept : Id -> bool
+    abstract PlacementAccept : string -> bool
 
 type UrlLinkStatus = 
     | WaitWM

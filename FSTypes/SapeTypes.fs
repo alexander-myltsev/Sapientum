@@ -206,7 +206,7 @@ type Site(xmlRpcStruct:XmlRpcStruct) =
     static member create xmlRpcStruct = new Site(xmlRpcStruct)
 
 type Link(xmlRpcStruct:XmlRpcStruct) = 
-    let _id            = unbox<Id>       xmlRpcStruct.["id"]
+    let _id            = unbox<string>   xmlRpcStruct.["id"]
     let _text          = unbox<string>   xmlRpcStruct.["txt"]
     let _siteUrl       = unbox<string>   xmlRpcStruct.["site_url"]
     let _pageUri       = unbox<string>   xmlRpcStruct.["page_uri"]
@@ -232,7 +232,8 @@ type Link(xmlRpcStruct:XmlRpcStruct) =
     member x.PageLevel     = _pageLevel
     member x.ExtLinks     = _extLinks
   
-    override x.ToString() = sprintf "%d %s %s %s %.2f" _id _siteUrl _pageUri _text _price
+    //override x.ToString() = sprintf "%d %s %s %s %.2f" _id _siteUrl _pageUri _text _price
+    override x.ToString() = sprintf "%s %s %s %s %.2f" _id _siteUrl _pageUri _text _price
   
     static member create xmlRpcStruct = new Link(xmlRpcStruct)
 
