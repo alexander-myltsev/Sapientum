@@ -130,6 +130,12 @@ namespace WpfControlLib
             return provider;
         }
 
+        public DataProviderForClosedSites GetDataProviderForClosedSites()
+        {
+            var provider = (DataProviderForClosedSites)mainGrid.Resources["dataProviderForClosedSites"];
+            return provider;
+        }
+
         public DataProviderForWaitingSites GetDataProviderForWaitingSites()
         {
             var provider = (DataProviderForWaitingSites)mainGrid.Resources["dataProviderForWaitingSites"];
@@ -309,6 +315,11 @@ namespace WpfControlLib
         private void BuySearchedSitesButtonOnClick(object sender, RoutedEventArgs e)
         {
             UIEventOccurred(this, EventType.NewPlaceOpenedPages(_projectUrlIdSelected));
+        }
+
+        private void BuyClosedSitesButtonOnClick(object sender, RoutedEventArgs e)
+        {
+            UIEventOccurred(this, EventType.NewPlaceClosedPages(_projectUrlIdSelected));
         }
 
         private void HighlightWaitingSitesTitlesClick(object sender, RoutedEventArgs e)

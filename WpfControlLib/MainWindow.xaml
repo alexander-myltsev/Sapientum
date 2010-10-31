@@ -12,6 +12,7 @@
             <Types:Projects x:Key="projects" />
             <Types:DataProviderForSearchedSites x:Key="dataProviderForSearchedSites" />
             <Types:DataProviderForWaitingSites x:Key="dataProviderForWaitingSites" />
+            <Types:DataProviderForClosedSites x:Key="dataProviderForClosedSites" />
 
             <Converters:LoginStatusToButtonIsEnabledConverter x:Key="loginStatusToButtonIsEnabledConverter" />
             <Converters:LoginStatusToTabsIsEnabledConverter x:Key="loginStatusToTabsIsEnabledConverter" />
@@ -263,7 +264,7 @@
                     <Button Grid.Column="2" Content="{Binding Source={StaticResource uiState}, Path=ClosedSites, Converter={StaticResource buyWaitingSitesButtonContentConverter}, UpdateSourceTrigger=PropertyChanged}" Width="Auto" Height="25" VerticalAlignment="Bottom" HorizontalAlignment="Left" Margin="80,10,10,10" Click="PlaceClosedSites"></Button>
                 </Grid>
             </TabItem>
-            <TabItem Header="Площадки" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
+            <TabItem Header="Открытые площадки" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
                 <Grid>
                     <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Купить" Margin="5,5,0,0" Click="BuySearchedSitesButtonOnClick"></Button>
 
@@ -275,6 +276,20 @@
 
                         </FlowDocumentReader.Resources>
                         <FlowDocument WpfControlLib:BindableExtender.BindableTable="{Binding Source={StaticResource dataProviderForSearchedSites}, Path=Metadata}">
+                            <Paragraph/>
+                        </FlowDocument>
+                    </FlowDocumentReader>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Закрытые площадки" IsEnabled="{Binding Source={StaticResource loginInfo}, Path=Status, Converter={StaticResource loginStatusToTabsIsEnabledConverter}, UpdateSourceTrigger=PropertyChanged}">
+                <Grid>
+                    <Button Height="28" Width="80" VerticalAlignment="Top" HorizontalAlignment="Left" Content="Купить" Margin="5,5,0,0" Click="BuyClosedSitesButtonOnClick"></Button>
+
+                    <FlowDocumentReader Margin="0,40,0,0">
+                        <FlowDocumentReader.Resources>
+
+                        </FlowDocumentReader.Resources>
+                        <FlowDocument WpfControlLib:BindableExtender.BindableTable="{Binding Source={StaticResource dataProviderForClosedSites}, Path=Metadata}">
                             <Paragraph/>
                         </FlowDocument>
                     </FlowDocumentReader>

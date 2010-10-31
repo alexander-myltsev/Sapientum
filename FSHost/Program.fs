@@ -174,25 +174,51 @@ let ProcessOpenedSitesDownloading (sapeApi:SapeApi) (projectUrlId:Id) (customFil
         Debug.WriteLine(sprintf "filters.Length: %d" openedSites.Length)
     } |> Async.Start
 
-let ProcessClosedSitesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (customFilter:CustomFilter) (closedSites:Site list) = 
+let ProcessClosedSitesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (customFilter:CustomFilter) (closedSites:Site list) (dataProviderForClosedSites:DataProviderForClosedSites) = 
     async {
+        dataProviderForClosedSites.GetRows closedSites
+        let id = dataProviderForClosedSites.GetId()
         closedSites |> List.iter (fun site ->
-            let pages = sapeApi.SearchPages projectUrlId site.Id (customFilter.ToXmlRpcStruct()) 
-            try
+            if id = dataProviderForClosedSites.GetId() then
+                let pages = sapeApi.SearchPages projectUrlId site.Id (customFilter.ToXmlRpcStruct()) 
+                let processPage (page:Page) = async {
+                    if id = dataProviderForClosedSites.GetId() then
+                        dataProviderForClosedSites.UpdateSitePage (site, page)
+                }
                 pages 
-                |> Seq.take (min 15 pages.Length) |> List.ofSeq 
-                |> List.iter (fun page ->
-                    let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
-                    ()
-                )
-            with 
-            | :? CookComputing.XmlRpc.XmlRpcFaultException as ex -> 
-                MessageBox.Show(sprintf "Ошибка при размещении ссылок для сайта %d. Причина: %s" site.Id ex.Message) |> ignore
+                    |> Seq.take (min pages.Length 15) |> List.ofSeq
+                    |> List.map processPage 
+                    |> Async.Parallel 
+                    |> Async.Ignore |> Async.Start
+                ()
         )
-        MessageBox.Show(sprintf "Размещение ссылок закончено") |> ignore
+        Debug.WriteLine(sprintf "filters.Length: %d" closedSites.Length)
+    // This code is before concept "closed sites are as opened" implementation
+//        closedSites |> List.iter (fun site ->
+//            let pages = sapeApi.SearchPages projectUrlId site.Id (customFilter.ToXmlRpcStruct()) 
+//            try
+//                pages 
+//                |> Seq.take (min 15 pages.Length) |> List.ofSeq 
+//                |> List.iter (fun page ->
+//                    let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
+//                    ()
+//                )
+//            with 
+//            | :? CookComputing.XmlRpc.XmlRpcFaultException as ex -> 
+//                MessageBox.Show(sprintf "Ошибка при размещении ссылок для сайта %d. Причина: %s" site.Id ex.Message) |> ignore
+//        )
+//        MessageBox.Show(sprintf "Размещение ссылок закончено") |> ignore
     } |> Async.Start
 
 let ProcessOpenedPagesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (placements:Page list) =
+    async {
+        placements |> Seq.iter (fun page ->
+            let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
+            ()
+        )
+    } |> Async.Start
+
+let ProcessClosedPagesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (placements:Page list) =
     async {
         placements |> Seq.iter (fun page ->
             let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
@@ -227,6 +253,7 @@ do
     let uiState = win.GetUiState()
     let projectsWpfData = win.GetProjects()
     let dataProviderForSearchedSites = win.GetDataProviderForSearchedSites()
+    let dataProviderForClosedSites = win.GetDataProviderForClosedSites()
     let dataProviderForWaitingSites  = win.GetDataProviderForWaitingSites()
 
 #if DEBUG
@@ -252,8 +279,9 @@ do
         | WaitingSitesRefresh selectedProjectId -> ProcessProjectSelection sapeApi selectedProjectId dataProviderForWaitingSites
         | SearchSites customFilter -> ProcessSitesSearch sapeApi customFilter uiState
         | DownloadFoundOpenedSites (projectUrlId, customFilter, openedSites) -> ProcessOpenedSitesDownloading sapeApi projectUrlId customFilter openedSites dataProviderForSearchedSites
-        | PlaceFoundClosedSites (projectUrlId, customFilter, closedSites) -> ProcessClosedSitesPlacement sapeApi projectUrlId customFilter closedSites
+        | PlaceFoundClosedSites (projectUrlId, customFilter, closedSites) -> ProcessClosedSitesPlacement sapeApi projectUrlId customFilter closedSites dataProviderForClosedSites
         | PlaceOpenedPages projectUrlId -> ProcessOpenedPagesPlacement sapeApi projectUrlId (dataProviderForSearchedSites.GetPlacements())
+        | PlaceClosedPages projectUrlId -> ProcessClosedPagesPlacement sapeApi projectUrlId (dataProviderForClosedSites.GetPlacements())
         | PlaceWaitingPages projectUrlId -> ProcessWaitingPagesPlacement sapeApi projectUrlId (dataProviderForWaitingSites.GetPlacements())
         | HighlightWaitingPages words -> ProcessHighlightWaitingPages (List.ofArray words) dataProviderForWaitingSites
         | HighlightSearchedPages words -> ProcessHighlightSearchedPages (List.ofArray words) dataProviderForSearchedSites

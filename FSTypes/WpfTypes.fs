@@ -265,7 +265,7 @@ type DataProviderForSearchedSites() =
     let _table = new Table( CellSpacing = 10.0 )
     let _handler (e:Windows.Navigation.RequestNavigateEventArgs) = 
         Diagnostics.Process.Start(e.Uri.ToString()) |> ignore
-    let _map : Map<string, (Site*Paragraph*Collections.Generic.List<TextBlock>)> ref = ref Map.empty
+    let _map : Map<Id, (Site*Paragraph*Collections.Generic.List<TextBlock>)> ref = ref Map.empty
     let _placements = new System.Collections.Generic.List<(CheckBox*Page)>()
 
     let _id = ref 0
@@ -341,7 +341,7 @@ type DataProviderForSearchedSites() =
                         grid.Children.Add(stackPanel2) |> ignore
                         //grid.Children.Add(links) |> ignore
 
-                        yield site.Url,(site, paragraph, new Collections.Generic.List<TextBlock>())
+                        yield site.Id,(site, paragraph, new Collections.Generic.List<TextBlock>())
                     } |> Map.ofSeq
             ()
         )
@@ -357,7 +357,7 @@ type DataProviderForSearchedSites() =
 
     member x.UpdateSitePage (site:Site, page:Page, title:string) = 
         x.Caller(fun () ->
-            match Map.tryFind site.Url !_map with
+            match Map.tryFind site.Id !_map with
             | Some (_,links,textBlocksList) ->
                 let stackPanel = new StackPanel(Margin = new Windows.Thickness(10.0,0.0,0.0,0.0))
             
@@ -407,14 +407,156 @@ type DataProviderForSearchedSites() =
     
     member x.Metadata = _table
 
+type DataProviderForClosedSites() = 
+    inherit WpfCollectionData()
+
+    let _table = new Table( CellSpacing = 10.0 )
+    let _handler (e:Windows.Navigation.RequestNavigateEventArgs) = 
+        Diagnostics.Process.Start(e.Uri.ToString()) |> ignore
+    let _map : Map<Id, (Site*Paragraph*Collections.Generic.List<TextBlock>)> ref = ref Map.empty
+    let _placements = new System.Collections.Generic.List<(CheckBox*Page)>()
+
+    let _id = ref 0
+    member x.GetId() = !_id
+    
+    member x.GetRows (sites:Site list) =
+        _id := !_id + 1
+        _map := Map.empty
+        _placements.Clear()
+
+        x.Caller(fun () ->
+            _table.RowGroups.Clear()
+
+            _map := 
+                seq {
+                    for site in sites do
+                        let rowGroup = new TableRowGroup()
+                        _table.RowGroups.Add(rowGroup)
+                        let row1 = new TableRow()
+                        rowGroup.Rows.Add(row1)
+
+                        let grid = new Grid()
+                        let paragraph = new Paragraph()
+                        paragraph.BorderThickness <- new Windows.Thickness(1.0, 1.0, 1.0, 1.0)
+                        paragraph.Inlines.Add(grid)
+                        let tableCell1 = new TableCell(paragraph)
+                        row1.Cells.Add(tableCell1)
+
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        grid.RowDefinitions.Add(new RowDefinition())
+                        
+                        let stackPanel0 = new StackPanel(Orientation = Orientation.Horizontal)
+                        let label = new Label(
+                                        Content = "Закрытый URL",
+                                        Margin = new Windows.Thickness(0.0,3.0,0.0,0.0),
+                                        FontWeight = Windows.FontWeights.UltraBold)
+                        stackPanel0.Children.Add(label) |> ignore
+                        Grid.SetRow(stackPanel0, 0)
+
+                        let stackPanel1 = new StackPanel(Orientation = Orientation.Horizontal)
+                        stackPanel1.Children.Add(new Label(Content = sprintf "ID: %d" site.Id)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "тИЦ: %d" site.CitationIndex)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "PR: %d" site.Pr)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "G:[%d]" site.GoogleGof)) |> ignore
+                        stackPanel1.Children.Add(new Label(Content = sprintf "Я:[%d]" site.YandexGof)) |> ignore
+                        Grid.SetRow(stackPanel1, 1)
+
+                        let boolToRu f = if f then "да" else "нет"
+                        
+                        let stackPanel2 = new StackPanel(Orientation = Orientation.Horizontal)
+                        stackPanel2.Children.Add(new Label(Content = sprintf "DMOZ: %s" (boolToRu site.IsInDmoz))) |> ignore
+                        stackPanel2.Children.Add(new Label(Content = sprintf "YACA: %s" (boolToRu site.IsInYaca))) |> ignore
+                        stackPanel2.Children.Add(new Label(Content = sprintf "Блок в Я: %s" (boolToRu site.IsBlockedInYandex))) |> ignore
+                        stackPanel2.Children.Add(new Label(Content = sprintf "Домен ур.: %d" site.DomainLevel)) |> ignore
+                        Grid.SetRow(stackPanel2, 2)
+
+                        //let links = new StackPanel(Margin = new Windows.Thickness(5.0,5.0,0.0,0.0), CanVerticallyScroll = true, Height = 150.0)
+                        //let links = new ListBox(Margin = new Windows.Thickness(5.0,5.0,0.0,0.0))
+                        //Grid.SetRow(links, 3)
+
+                        grid.Children.Add(stackPanel0) |> ignore
+                        grid.Children.Add(stackPanel1) |> ignore
+                        grid.Children.Add(stackPanel2) |> ignore
+                        //grid.Children.Add(links) |> ignore
+
+                        yield site.Id,(site, paragraph, new Collections.Generic.List<TextBlock>())
+                    } |> Map.ofSeq
+            ()
+        )
+//    member x.Highlight (words:string list) =
+//        x.Caller ( fun _ -> 
+//            !_map |> Map.iter (fun navUri (urlLink,paragraph,textBlocksList) -> 
+//                                    textBlocksList |> Seq.iter (fun textBlock ->
+//                                        match words |> List.tryFind (textBlock.Text.ToLower().Contains) with
+//                                        | Some word -> textBlock.Background <- Windows.Media.Brushes.Yellow
+//                                        | None -> textBlock.Background <- null)
+//                                    )
+//        )
+
+    member x.UpdateSitePage (site:Site, page:Page) = 
+        x.Caller(fun () ->
+            match Map.tryFind site.Id !_map with
+            | Some (_,links,textBlocksList) ->
+                let stackPanel = new StackPanel(Margin = new Windows.Thickness(10.0,0.0,0.0,0.0))
+            
+//                let hyperlink = 
+//                    new Hyperlink(
+//                        new Run(page.Uri),
+//                        NavigateUri = new Uri(sprintf "%s%s" site.Url page.Uri)
+//                    )
+//                hyperlink.RequestNavigate |> Event.add _handler |> ignore
+//                let label = new Label(Content = hyperlink)
+//                let stackPanel1 = new StackPanel(Orientation = Orientation.Horizontal)
+                let checkBox = new CheckBox(Margin = new Windows.Thickness(0.0,5.0,0.0,0.0))
+//                stackPanel1.Children.Add(checkBox) |> ignore
+//                stackPanel1.Children.Add(label) |> ignore
+
+                let stackPanel2 = new StackPanel(Orientation = Orientation.Horizontal)
+                stackPanel2.Children.Add(checkBox) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "ВС: %d" page.ExtLinks)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "УВ: %d" page.Level)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "PR: %d" page.Pr)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "Мест: %d" page.FreePlaces)) |> ignore
+                stackPanel2.Children.Add(new Label(Content = sprintf "Цена: %.2f" page.Price)) |> ignore
+
+//                stackPanel.Children.Add(stackPanel1) |> ignore
+                stackPanel.Children.Add(stackPanel2) |> ignore
+                //stackPanel.Children.Add(new Label(Content = sprintf "Title: %s" title)) |> ignore
+
+                _placements.Add((checkBox,page))
+
+//                let textBlock = new TextBlock(
+//                                    Text = sprintf "Закрытый URL", 
+//                                    TextWrapping = Windows.TextWrapping.Wrap,
+//                                    Height = Double.NaN, 
+//                                    Margin = new Windows.Thickness(10.0,0.0,0.0,0.0))
+//                textBlocksList.Add textBlock
+
+                //links.Items.Add(stackPanel) |> ignore
+                links.Inlines.Add(stackPanel)
+//                links.Inlines.Add(textBlock)
+            | None -> ()
+        )
+
+    member x.GetPlacements() =
+        _placements 
+        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value)
+        |> Seq.map (fun (checkBox,page) -> (checkBox.IsEnabled <- false; page))
+        |> List.ofSeq
+    
+    member x.Metadata = _table
+
 type EventType = 
     | Login of LoginInfo
     | WaitingSitesRefresh of Id
     | SearchSites of CustomFilter
     | DownloadFoundOpenedSites of (Id*CustomFilter*Site list)
     | PlaceFoundClosedSites of (Id*CustomFilter*Site list)
-    | PlaceOpenedPages of (Id)
-    | PlaceWaitingPages of (Id)
+    | PlaceOpenedPages of Id
+    | PlaceClosedPages of Id
+    | PlaceWaitingPages of Id
     | HighlightWaitingPages of String array
     | HighlightSearchedPages of String array
 
