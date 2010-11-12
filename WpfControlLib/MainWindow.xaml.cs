@@ -309,17 +309,23 @@ namespace WpfControlLib
 
         private void BuyWaitingSitesButtonOnClick(object sender, RoutedEventArgs e)
         {
+            buyWaitingSitesButton.IsEnabled = false;
             UIEventOccurred(this, EventType.NewPlaceWaitingPages(_projectUrlIdSelected));
+            buyWaitingSitesButton.IsEnabled = true;
         }
 
         private void BuySearchedSitesButtonOnClick(object sender, RoutedEventArgs e)
         {
+            buySearchedSitesButton.IsEnabled = false;
             UIEventOccurred(this, EventType.NewPlaceOpenedPages(_projectUrlIdSelected));
+            buySearchedSitesButton.IsEnabled = true;
         }
 
         private void BuyClosedSitesButtonOnClick(object sender, RoutedEventArgs e)
         {
+            buyClosedSitesButton.IsEnabled = false;
             UIEventOccurred(this, EventType.NewPlaceClosedPages(_projectUrlIdSelected));
+            buyClosedSitesButton.IsEnabled = true;
         }
 
         private void HighlightWaitingSitesTitlesClick(object sender, RoutedEventArgs e)

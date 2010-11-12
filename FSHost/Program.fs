@@ -213,8 +213,11 @@ let ProcessClosedSitesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (customFilte
 let ProcessOpenedPagesPlacement (sapeApi:SapeApi) (projectUrlId:Id) (placements:Page list) =
     async {
         placements |> Seq.iter (fun page ->
-            let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
-            ()
+            try
+                let linkId = sapeApi.PlacementCreate page.Id projectUrlId 0
+                ()
+            with
+            | ex -> MessageBox.Show (sprintf "Ошибка размещения ссылки '%s'. Причина: %s" page.Uri ex.Message) |> ignore
         )
     } |> Async.Start
 

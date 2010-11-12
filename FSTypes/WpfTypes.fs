@@ -253,7 +253,7 @@ type DataProviderForWaitingSites() =
 
     member x.GetPlacements() = 
         _placements 
-        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value)
+        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value && checkBox.IsEnabled)
         |> Seq.map (fun (checkBox,urlLink) -> (checkBox.IsEnabled <- false; urlLink))
         |> List.ofSeq
     
@@ -401,7 +401,7 @@ type DataProviderForSearchedSites() =
 
     member x.GetPlacements() =
         _placements 
-        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value)
+        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value && checkBox.IsEnabled)
         |> Seq.map (fun (checkBox,page) -> (checkBox.IsEnabled <- false; page))
         |> List.ofSeq
     
@@ -542,7 +542,7 @@ type DataProviderForClosedSites() =
 
     member x.GetPlacements() =
         _placements 
-        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value)
+        |> Seq.filter (fun (checkBox,_) -> checkBox.IsChecked.Value && checkBox.IsEnabled)
         |> Seq.map (fun (checkBox,page) -> (checkBox.IsEnabled <- false; page))
         |> List.ofSeq
     
