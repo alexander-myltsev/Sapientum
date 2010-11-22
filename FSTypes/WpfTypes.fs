@@ -509,7 +509,7 @@ type DataProviderForClosedSites() =
 //                hyperlink.RequestNavigate |> Event.add _handler |> ignore
 //                let label = new Label(Content = hyperlink)
 //                let stackPanel1 = new StackPanel(Orientation = Orientation.Horizontal)
-                let checkBox = new CheckBox(Margin = new Windows.Thickness(0.0,5.0,0.0,0.0))
+                let checkBox = new CheckBox(Margin = new Windows.Thickness(0.0,5.0,0.0,0.0), IsChecked = new Nullable<bool>(true))
 //                stackPanel1.Children.Add(checkBox) |> ignore
 //                stackPanel1.Children.Add(label) |> ignore
 

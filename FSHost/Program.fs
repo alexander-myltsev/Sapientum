@@ -290,4 +290,12 @@ do
         | HighlightSearchedPages words -> ProcessHighlightSearchedPages (List.ofArray words) dataProviderForSearchedSites
     )
 
-    app.Run(win) |> ignore
+    try
+        app.Run(win) |> ignore
+    with
+        ex -> 
+            let message = ex.Message
+            let stackTrace = ex.StackTrace
+            let source = ex.Source
+            let output = sprintf "message: %s\nstack trace:%s\nsource: %s" message stackTrace source
+            File.AppendAllText(sprintf "error-%s.log" (DateTime.Now.ToString("yyyy_MM_dd-HH_mm")), output)
